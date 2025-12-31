@@ -14,7 +14,353 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          documents_uploaded: boolean | null
+          id: string
+          kuccps_reference: string | null
+          personal_details_confirmed: boolean | null
+          status: Database["public"]["Enums"]["application_status"]
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          documents_uploaded?: boolean | null
+          id?: string
+          kuccps_reference?: string | null
+          personal_details_confirmed?: boolean | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          documents_uploaded?: boolean | null
+          id?: string
+          kuccps_reference?: string | null
+          personal_details_confirmed?: boolean | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      course_selections: {
+        Row: {
+          application_id: string
+          cluster_points: number | null
+          course_code: string | null
+          course_id: string
+          course_name: string
+          created_at: string
+          id: string
+          institution_name: string | null
+          priority: number
+        }
+        Insert: {
+          application_id: string
+          cluster_points?: number | null
+          course_code?: string | null
+          course_id: string
+          course_name: string
+          created_at?: string
+          id?: string
+          institution_name?: string | null
+          priority: number
+        }
+        Update: {
+          application_id?: string
+          cluster_points?: number | null
+          course_code?: string | null
+          course_id?: string
+          course_name?: string
+          created_at?: string
+          id?: string
+          institution_name?: string | null
+          priority?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_selections_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          application_id: string | null
+          document_type: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          document_type: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          document_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          application_id: string | null
+          created_at: string
+          id: string
+          mpesa_receipt: string | null
+          paid_at: string | null
+          payment_method: string | null
+          phone_number: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          transaction_ref: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          mpesa_receipt?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          phone_number?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          transaction_ref?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          mpesa_receipt?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          phone_number?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          transaction_ref?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          cluster_points: number | null
+          county: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string
+          full_name: string
+          id: string
+          id_number: string | null
+          index_number: string | null
+          mean_grade: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          cluster_points?: number | null
+          county?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email: string
+          full_name: string
+          id?: string
+          id_number?: string | null
+          index_number?: string | null
+          mean_grade?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          cluster_points?: number | null
+          county?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          id_number?: string | null
+          index_number?: string | null
+          mean_grade?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subject_grades: {
+        Row: {
+          created_at: string
+          grade: string
+          id: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grade: string
+          id?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grade?: string
+          id?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          sender_type: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          sender_type: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          sender_type?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +369,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status:
+        | "draft"
+        | "payment_pending"
+        | "submitted"
+        | "in_progress"
+        | "completed"
+        | "rejected"
+      payment_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +508,22 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: [
+        "draft",
+        "payment_pending",
+        "submitted",
+        "in_progress",
+        "completed",
+        "rejected",
+      ],
+      payment_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "refunded",
+      ],
+    },
   },
 } as const

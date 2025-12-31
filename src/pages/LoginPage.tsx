@@ -1,22 +1,51 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Eye, EyeOff, GraduationCap, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  if (user) {
+    navigate('/dashboard');
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
-    console.log('Login submitted');
+    setIsLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Welcome back!',
+        description: 'You have been logged in successfully.',
+      });
+      navigate('/dashboard');
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -148,8 +177,8 @@ const LoginPage = () => {
                 </Link>
               </div>
 
-              <Button type="submit" variant="teal" size="lg" className="w-full">
-                Sign In
+              <Button type="submit" variant="teal" size="lg" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
