@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Eye,
@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const steps = [
@@ -37,6 +39,7 @@ const meanGrades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-'
 const RegisterPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -49,6 +52,15 @@ const RegisterPage = () => {
     agreeTerms: false,
     agreePrivacy: false,
   });
+  const { signUp, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  if (user) {
+    navigate('/dashboard');
+    return null;
+  }
 
   const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -66,9 +78,33 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration submitted:', formData);
+    setIsLoading(true);
+
+    const { error } = await signUp(formData.email, formData.password, {
+      full_name: formData.fullName,
+      phone: formData.phone,
+      index_number: formData.indexNumber,
+      mean_grade: formData.meanGrade,
+      cluster_points: formData.clusterPoints,
+    });
+
+    if (error) {
+      toast({
+        title: 'Registration Failed',
+        description: error.message || 'Failed to create account',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Account Created!',
+        description: 'Welcome to KUCCPS Registration Service.',
+      });
+      navigate('/dashboard');
+    }
+
+    setIsLoading(false);
   };
 
   const getPasswordStrength = (password: string) => {
@@ -436,9 +472,9 @@ const RegisterPage = () => {
                     type="submit"
                     variant="teal"
                     className="flex-1"
-                    disabled={!formData.agreeTerms || !formData.agreePrivacy}
+                    disabled={!formData.agreeTerms || !formData.agreePrivacy || isLoading}
                   >
-                    Create Account
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 )}
               </div>
