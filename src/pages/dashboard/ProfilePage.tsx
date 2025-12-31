@@ -56,10 +56,19 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     try {
-      await updateProfile.mutateAsync({
-        ...formData,
+      // Convert empty strings to null for database compatibility
+      const cleanedData = {
+        full_name: formData.full_name || null,
+        phone: formData.phone || null,
+        id_number: formData.id_number || null,
+        date_of_birth: formData.date_of_birth || null,
+        county: formData.county || null,
+        index_number: formData.index_number || null,
+        mean_grade: formData.mean_grade || null,
         cluster_points: formData.cluster_points ? parseInt(formData.cluster_points) : null,
-      });
+      };
+      
+      await updateProfile.mutateAsync(cleanedData);
       toast({
         title: 'Profile Updated',
         description: 'Your profile has been updated successfully.',
