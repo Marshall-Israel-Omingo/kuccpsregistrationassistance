@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, GraduationCap, User, LogIn } from 'lucide-react';
+import { Menu, X, GraduationCap, User, LogIn, LayoutDashboard, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/hooks/useAdmin';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -50,18 +54,42 @@ const Header = () => {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-nav-foreground hover:text-nav-foreground hover:bg-nav-foreground/10">
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="teal" size="sm">
-                <User className="mr-2 h-4 w-4" />
-                Register
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="ghost" size="sm" className="text-nav-foreground hover:text-nav-foreground hover:bg-nav-foreground/10">
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm" className="text-nav-foreground hover:text-nav-foreground hover:bg-nav-foreground/10">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="teal" size="sm" onClick={() => signOut()}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="text-nav-foreground hover:text-nav-foreground hover:bg-nav-foreground/10">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="teal" size="sm">
+                    <User className="mr-2 h-4 w-4" />
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,17 +124,41 @@ const Header = () => {
                   {link.label}
                 </Link>
               ))}
-              <div className="flex gap-2 mt-4 px-4">
-                <Link to="/login" className="flex-1" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full border-nav-foreground/30 text-nav-foreground">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/register" className="flex-1" onClick={() => setIsOpen(false)}>
-                  <Button variant="teal" className="w-full">
-                    Register
-                  </Button>
-                </Link>
+              <div className="flex flex-col gap-2 mt-4 px-4">
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full border-nav-foreground/30 text-nav-foreground">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Button>
+                      </Link>
+                    )}
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full border-nav-foreground/30 text-nav-foreground">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button variant="teal" className="w-full" onClick={() => { signOut(); setIsOpen(false); }}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex gap-2">
+                    <Link to="/login" className="flex-1" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full border-nav-foreground/30 text-nav-foreground">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/register" className="flex-1" onClick={() => setIsOpen(false)}>
+                      <Button variant="teal" className="w-full">
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </nav>
