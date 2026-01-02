@@ -77,6 +77,62 @@ export const useUserRoles = () => {
   });
 };
 
+export const useAllUserRoles = () => {
+  return useQuery({
+    queryKey: ['all-user-roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as UserRole[];
+    },
+  });
+};
+
+export const useUpdateUserRole = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, role }: { id: string; role: 'admin' | 'moderator' | 'support' | 'user' }) => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .update({ role })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['userRoles'] });
+    },
+  });
+};
+
+export const useDeleteUserRole = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-user-roles'] });
+      queryClient.invalidateQueries({ queryKey: ['userRoles'] });
+    },
+  });
+};
+
 export const useSystemSettings = (category?: string) => {
   return useQuery({
     queryKey: ['systemSettings', category],

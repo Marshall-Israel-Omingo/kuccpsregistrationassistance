@@ -31,6 +31,7 @@ import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
 import AdminSupportPage from "./pages/admin/AdminSupportPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminTemplatesPage from "./pages/admin/settings/AdminTemplatesPage";
 import AdminNotificationsPage from "./pages/admin/settings/AdminNotificationsPage";
 import AdminSecurityPage from "./pages/admin/settings/AdminSecurityPage";
@@ -162,6 +163,14 @@ const App = () => (
                 element={
                   <AdminProtectedRoute>
                     <AdminReportsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminUsersPage />
                   </AdminProtectedRoute>
                 }
               />
