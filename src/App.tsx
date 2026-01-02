@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import AdminProtectedRoute from "@/components/admin/AdminProtectedRoute";
 import Index from "./pages/Index";
 import CoursesPage from "./pages/CoursesPage";
 import PrinciplePage from "./pages/PrinciplePage";
@@ -22,6 +23,18 @@ import DashboardCoursesPage from "./pages/dashboard/DashboardCoursesPage";
 import PaymentsPage from "./pages/dashboard/PaymentsPage";
 import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import NotFound from "./pages/NotFound";
+
+// Admin pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
+import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
+import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
+import AdminSupportPage from "./pages/admin/AdminSupportPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import AdminTemplatesPage from "./pages/admin/settings/AdminTemplatesPage";
+import AdminNotificationsPage from "./pages/admin/settings/AdminNotificationsPage";
+import AdminSecurityPage from "./pages/admin/settings/AdminSecurityPage";
+import AdminSystemPage from "./pages/admin/settings/AdminSystemPage";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +113,88 @@ const App = () => (
                   <ProtectedRoute>
                     <DashboardHome />
                   </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboard />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/applications"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminApplicationsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/students"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminStudentsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/payments"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminPaymentsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/support"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminSupportPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/reports"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminReportsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings/templates"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminTemplatesPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings/notifications"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminNotificationsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings/security"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminSecurityPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings/system"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminSystemPage />
+                  </AdminProtectedRoute>
                 }
               />
 
