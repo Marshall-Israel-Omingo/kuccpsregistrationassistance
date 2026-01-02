@@ -39,6 +39,7 @@ const navigation = [
   { name: 'Students', href: '/admin/students', icon: Users },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
   { name: 'Support Tickets', href: '/admin/support', icon: MessageSquare },
+  { name: 'User Roles', href: '/admin/users', icon: Shield },
   { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
 ];
 
