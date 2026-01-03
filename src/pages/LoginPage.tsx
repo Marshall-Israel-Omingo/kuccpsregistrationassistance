@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Eye, EyeOff, GraduationCap, Mail, Lock } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,11 +20,26 @@ const LoginPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/dashboard');
-    return null;
-  }
+  // Check admin status and redirect accordingly
+  useEffect(() => {
+    const checkAdminAndRedirect = async () => {
+      if (user) {
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .in('role', ['admin', 'moderator']);
+        
+        if (roles && roles.length > 0) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    };
+    
+    checkAdminAndRedirect();
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,15 +53,14 @@ const LoginPage = () => {
         description: error.message || 'Invalid email or password',
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({
         title: 'Welcome back!',
         description: 'You have been logged in successfully.',
       });
-      navigate('/dashboard');
+      // Redirect will happen in useEffect when user state updates
     }
-
-    setIsLoading(false);
   };
 
   return (
