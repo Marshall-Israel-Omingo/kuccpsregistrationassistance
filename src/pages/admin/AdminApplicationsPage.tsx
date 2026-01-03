@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Search, Filter, Eye, MoreHorizontal, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { Search, Eye, MoreHorizontal, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -182,21 +183,11 @@ const AdminApplicationsPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Approve
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Clock className="mr-2 h-4 w-4" />
-                                Mark In Progress
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Reject
+                              <DropdownMenuItem asChild>
+                                <Link to={`/admin/applications/${app.id}`}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
