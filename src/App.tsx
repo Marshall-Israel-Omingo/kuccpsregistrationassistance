@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
+import AdminApplicationDetailPage from "./pages/admin/AdminApplicationDetailPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
 import AdminSupportPage from "./pages/admin/AdminSupportPage";
@@ -131,6 +132,14 @@ const App = () => (
                 element={
                   <AdminProtectedRoute>
                     <AdminApplicationsPage />
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/applications/:applicationId"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminApplicationDetailPage />
                   </AdminProtectedRoute>
                 }
               />
