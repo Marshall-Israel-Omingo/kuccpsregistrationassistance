@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { User, Mail, Phone, Calendar, MapPin, Hash, GraduationCap, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, GraduationCap, Save, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,19 +13,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { useProfile, useUpdateProfile, useSubjectGrades, useUpdateSubjectGrades } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
-
-const meanGrades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
-const counties = [
-  'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kiambu', 'Machakos', 'Nyeri',
-  'Meru', 'Kakamega', 'Bungoma', 'Embu', 'Kitui', 'Garissa', 'Turkana', 'Marsabit',
-];
+import { kcseSubjects, kcseGrades, kenyanCounties } from '@/data/subjects';
+import { gradePoints, calculateMeanGrade, SubjectGrade } from '@/lib/gradeCalculations';
 
 const ProfilePage = () => {
-  const { data: profile, isLoading } = useProfile();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: subjectGrades, isLoading: gradesLoading } = useSubjectGrades();
   const updateProfile = useUpdateProfile();
+  const updateSubjectGrades = useUpdateSubjectGrades();
   const { toast } = useToast();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -34,9 +33,17 @@ const ProfilePage = () => {
     date_of_birth: '',
     county: '',
     index_number: '',
-    mean_grade: '',
-    cluster_points: '',
+    kcpe_index_number: '',
   });
+  const [editableGrades, setEditableGrades] = useState<SubjectGrade[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+
+  useEffect(() => {
+    if (subjectGrades) {
+      setEditableGrades(subjectGrades.map(g => ({ subject: g.subject, grade: g.grade })));
+    }
+  }, [subjectGrades]);
 
   const handleEdit = () => {
     if (profile) {
@@ -47,16 +54,49 @@ const ProfilePage = () => {
         date_of_birth: profile.date_of_birth || '',
         county: profile.county || '',
         index_number: profile.index_number || '',
-        mean_grade: profile.mean_grade || '',
-        cluster_points: profile.cluster_points?.toString() || '',
+        kcpe_index_number: profile.kcpe_index_number || '',
       });
+    }
+    if (subjectGrades) {
+      setEditableGrades(subjectGrades.map(g => ({ subject: g.subject, grade: g.grade })));
     }
     setIsEditing(true);
   };
 
+  const addSubject = () => {
+    if (!selectedSubject || !selectedGrade) {
+      toast({
+        title: 'Selection Required',
+        description: 'Please select both subject and grade',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (editableGrades.some(g => g.subject === selectedSubject)) {
+      toast({
+        title: 'Duplicate Subject',
+        description: 'This subject has already been added',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setEditableGrades([...editableGrades, { subject: selectedSubject, grade: selectedGrade }]);
+    setSelectedSubject('');
+    setSelectedGrade('');
+  };
+
+  const removeSubject = (index: number) => {
+    setEditableGrades(editableGrades.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     try {
-      // Convert empty strings to null for database compatibility
+      // Calculate new mean grade and points
+      const { meanGrade, totalPoints } = calculateMeanGrade(editableGrades);
+
+      // Update profile with calculated values
       const cleanedData = {
         full_name: formData.full_name || null,
         phone: formData.phone || null,
@@ -64,14 +104,17 @@ const ProfilePage = () => {
         date_of_birth: formData.date_of_birth || null,
         county: formData.county || null,
         index_number: formData.index_number || null,
-        mean_grade: formData.mean_grade || null,
-        cluster_points: formData.cluster_points ? parseInt(formData.cluster_points) : null,
+        kcpe_index_number: formData.kcpe_index_number || null,
+        mean_grade: meanGrade !== '-' ? meanGrade : null,
+        cluster_points: totalPoints > 0 ? totalPoints : null,
       };
       
       await updateProfile.mutateAsync(cleanedData);
+      await updateSubjectGrades.mutateAsync(editableGrades);
+      
       toast({
         title: 'Profile Updated',
-        description: 'Your profile has been updated successfully.',
+        description: 'Your profile and subject grades have been updated successfully.',
       });
       setIsEditing(false);
     } catch (error) {
@@ -92,6 +135,10 @@ const ProfilePage = () => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const isLoading = profileLoading || gradesLoading;
+  const displayGrades = isEditing ? editableGrades : (subjectGrades?.map(g => ({ subject: g.subject, grade: g.grade })) || []);
+  const { meanGrade, totalPoints } = calculateMeanGrade(displayGrades);
 
   if (isLoading) {
     return (
@@ -210,7 +257,7 @@ const ProfilePage = () => {
                       <SelectValue placeholder="Select county" />
                     </SelectTrigger>
                     <SelectContent>
-                      {counties.map((county) => (
+                      {kenyanCounties.map((county) => (
                         <SelectItem key={county} value={county}>
                           {county}
                         </SelectItem>
@@ -233,68 +280,122 @@ const ProfilePage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Index Number</Label>
-                {isEditing ? (
-                  <Input
-                    value={formData.index_number}
-                    onChange={(e) => setFormData({ ...formData, index_number: e.target.value })}
-                    placeholder="e.g., 12345678/2024"
-                  />
-                ) : (
-                  <p className="text-2xl font-bold text-secondary">{profile?.index_number || '-'}</p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>KCSE Index Number</Label>
+                  {isEditing ? (
+                    <Input
+                      value={formData.index_number}
+                      onChange={(e) => setFormData({ ...formData, index_number: e.target.value })}
+                      placeholder="e.g., 12345678/2024"
+                    />
+                  ) : (
+                    <p className="text-foreground font-medium">{profile?.index_number || '-'}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>KCPE Index Number</Label>
+                  {isEditing ? (
+                    <Input
+                      value={formData.kcpe_index_number}
+                      onChange={(e) => setFormData({ ...formData, kcpe_index_number: e.target.value })}
+                      placeholder="e.g., 12345678"
+                    />
+                  ) : (
+                    <p className="text-foreground font-medium">{profile?.kcpe_index_number || '-'}</p>
+                  )}
+                </div>
               </div>
 
+              {/* Calculated Results Display */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Mean Grade</Label>
-                  {isEditing ? (
-                    <Select
-                      value={formData.mean_grade}
-                      onValueChange={(value) => setFormData({ ...formData, mean_grade: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select grade" />
+                  <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-bold">
+                    {meanGrade}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Total Points</Label>
+                  <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary font-bold">
+                    {totalPoints}
+                  </div>
+                </div>
+              </div>
+
+              {/* Subject Grades Section */}
+              <div className="space-y-3 pt-2">
+                <Label className="text-base font-semibold">Subject Grades ({displayGrades.length})</Label>
+                
+                {isEditing && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Subject" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {kcseSubjects
+                          .filter(s => !editableGrades.some(g => g.subject === s))
+                          .map((subject) => (
+                            <SelectItem key={subject} value={subject} className="text-xs">
+                              {subject}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                      <SelectTrigger className="text-xs">
+                        <SelectValue placeholder="Grade" />
                       </SelectTrigger>
                       <SelectContent>
-                        {meanGrades.map((grade) => (
+                        {kcseGrades.map((grade) => (
                           <SelectItem key={grade} value={grade}>
                             {grade}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : (
-                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-bold">
-                      {profile?.mean_grade || '-'}
-                    </div>
-                  )}
-                </div>
+                    <Button type="button" size="sm" onClick={addSubject} variant="coral">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label>Cluster Points</Label>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      value={formData.cluster_points}
-                      onChange={(e) => setFormData({ ...formData, cluster_points: e.target.value })}
-                      placeholder="Enter points"
-                      min="0"
-                      max="48"
-                    />
+                <div className="max-h-48 overflow-y-auto space-y-1 border rounded-lg p-2">
+                  {displayGrades.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-4">No subject grades added</p>
                   ) : (
-                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 text-secondary font-bold">
-                      {profile?.cluster_points || '-'}
-                    </div>
+                    displayGrades.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium truncate max-w-[120px]">{item.subject}</span>
+                          <span className="text-secondary font-bold">{item.grade}</span>
+                          <span className="text-xs text-muted-foreground">({gradePoints[item.grade]} pts)</span>
+                        </div>
+                        {isEditing && (
+                          <button
+                            type="button"
+                            onClick={() => removeSubject(index)}
+                            className="text-destructive hover:text-destructive/80"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))
                   )}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  * Mean grade calculated from best Language + Math + 5 others
+                </p>
               </div>
 
               {isEditing && (
-                <Button variant="teal" className="w-full mt-4" onClick={handleSave} disabled={updateProfile.isPending}>
+                <Button variant="teal" className="w-full mt-4" onClick={handleSave} disabled={updateProfile.isPending || updateSubjectGrades.isPending}>
                   <Save className="mr-2 h-4 w-4" />
-                  {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
+                  {updateProfile.isPending || updateSubjectGrades.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               )}
             </CardContent>

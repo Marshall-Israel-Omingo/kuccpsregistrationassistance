@@ -12,6 +12,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
+  Plus,
+  X,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,17 +27,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { kcseSubjects, kcseGrades } from '@/data/subjects';
+import { gradePoints, calculateMeanGrade, validateSubjects, SubjectGrade } from '@/lib/gradeCalculations';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
-  { id: 1, title: 'Basic Info' },
-  { id: 2, title: 'KCSE Details' },
-  { id: 3, title: 'Confirmation' },
+  { id: 1, title: 'Personal Info' },
+  { id: 2, title: 'Index Numbers' },
+  { id: 3, title: 'KCSE Grades' },
 ];
-
-const meanGrades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'E'];
 
 const RegisterPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -45,13 +50,16 @@ const RegisterPage = () => {
     email: '',
     phone: '',
     password: '',
-    indexNumber: '',
-    meanGrade: '',
-    clusterPoints: '',
-    addSubjectsLater: false,
+    kcseIndexNumber: '',
+    kcpeIndexNumber: '',
     agreeTerms: false,
     agreePrivacy: false,
   });
+  const [subjects, setSubjects] = useState<SubjectGrade[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const { signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -64,10 +72,79 @@ const RegisterPage = () => {
 
   const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const addSubject = () => {
+    if (!selectedSubject || !selectedGrade) {
+      toast({
+        title: 'Selection Required',
+        description: 'Please select both subject and grade',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (subjects.some(s => s.subject === selectedSubject)) {
+      toast({
+        title: 'Duplicate Subject',
+        description: 'This subject has already been added',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubjects([...subjects, { subject: selectedSubject, grade: selectedGrade }]);
+    setSelectedSubject('');
+    setSelectedGrade('');
+    setErrors((prev) => ({ ...prev, subjects: '' }));
+  };
+
+  const removeSubject = (index: number) => {
+    setSubjects(subjects.filter((_, i) => i !== index));
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (step === 1) {
+      if (!formData.fullName.trim()) newErrors.fullName = 'Name is required';
+      if (!formData.email.trim()) newErrors.email = 'Email is required';
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Phone number is required';
+      } else if (!/^(07|01)\d{8}$/.test(formData.phone.replace(/\s/g, ''))) {
+        newErrors.phone = 'Invalid phone format (07XXXXXXXX or 01XXXXXXXX)';
+      }
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.kcseIndexNumber.trim()) newErrors.kcseIndexNumber = 'KCSE Index Number is required';
+      if (!formData.kcpeIndexNumber.trim()) newErrors.kcpeIndexNumber = 'KCPE Index Number is required';
+    }
+
+    if (step === 3) {
+      const validation = validateSubjects(subjects);
+      if (!validation.isValid) {
+        newErrors.subjects = validation.error || 'Invalid subjects';
+      }
+      if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
+      if (!formData.agreePrivacy) newErrors.agreePrivacy = 'You must agree to the privacy policy';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
-    if (currentStep < steps.length) {
+    if (validateStep(currentStep) && currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -75,19 +152,26 @@ const RegisterPage = () => {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setErrors({});
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateStep(3)) return;
+
     setIsLoading(true);
+
+    // Calculate mean grade and total points
+    const { meanGrade, totalPoints } = calculateMeanGrade(subjects);
 
     const { error } = await signUp(formData.email, formData.password, {
       full_name: formData.fullName,
       phone: formData.phone,
-      index_number: formData.indexNumber,
-      mean_grade: formData.meanGrade,
-      cluster_points: formData.clusterPoints,
+      index_number: formData.kcseIndexNumber,
+      kcpe_index_number: formData.kcpeIndexNumber,
+      mean_grade: meanGrade,
+      cluster_points: totalPoints.toString(),
     });
 
     if (error) {
@@ -96,14 +180,28 @@ const RegisterPage = () => {
         description: error.message || 'Failed to create account',
         variant: 'destructive',
       });
-    } else {
-      toast({
-        title: 'Account Created!',
-        description: 'Welcome to KUCCPS Registration Service.',
-      });
-      navigate('/dashboard');
+      setIsLoading(false);
+      return;
     }
 
+    // Get the newly created user and insert subject grades
+    const { data: { user: newUser } } = await supabase.auth.getUser();
+    
+    if (newUser && subjects.length > 0) {
+      const subjectGradesData = subjects.map(s => ({
+        user_id: newUser.id,
+        subject: s.subject,
+        grade: s.grade,
+      }));
+
+      await supabase.from('subject_grades').insert(subjectGradesData);
+    }
+
+    toast({
+      title: 'Account Created!',
+      description: 'Welcome to KUCCPS Registration Service.',
+    });
+    navigate('/dashboard');
     setIsLoading(false);
   };
 
@@ -116,6 +214,7 @@ const RegisterPage = () => {
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
+  const { meanGrade, totalPoints } = calculateMeanGrade(subjects);
 
   return (
     <>
@@ -170,7 +269,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="flex-1 flex items-center justify-center p-8 bg-background">
+        <div className="flex-1 flex items-center justify-center p-8 bg-background overflow-y-auto">
           <div className="w-full max-w-lg">
             {/* Mobile Logo */}
             <div className="lg:hidden mb-8 text-center">
@@ -229,7 +328,7 @@ const RegisterPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Step 1: Basic Information */}
+              {/* Step 1: Personal Information */}
               {currentStep === 1 && (
                 <>
                   <div className="space-y-2">
@@ -242,10 +341,10 @@ const RegisterPage = () => {
                         placeholder="Enter your full name"
                         value={formData.fullName}
                         onChange={(e) => updateFormData('fullName', e.target.value)}
-                        className="pl-10"
-                        required
+                        className={cn('pl-10', errors.fullName && 'border-destructive')}
                       />
                     </div>
+                    {errors.fullName && <p className="text-destructive text-sm">{errors.fullName}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -258,10 +357,10 @@ const RegisterPage = () => {
                         placeholder="Enter your email"
                         value={formData.email}
                         onChange={(e) => updateFormData('email', e.target.value)}
-                        className="pl-10"
-                        required
+                        className={cn('pl-10', errors.email && 'border-destructive')}
                       />
                     </div>
+                    {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -274,10 +373,10 @@ const RegisterPage = () => {
                         placeholder="e.g., 0712345678"
                         value={formData.phone}
                         onChange={(e) => updateFormData('phone', e.target.value)}
-                        className="pl-10"
-                        required
+                        className={cn('pl-10', errors.phone && 'border-destructive')}
                       />
                     </div>
+                    {errors.phone && <p className="text-destructive text-sm">{errors.phone}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -290,8 +389,7 @@ const RegisterPage = () => {
                         placeholder="Create a password"
                         value={formData.password}
                         onChange={(e) => updateFormData('password', e.target.value)}
-                        className="pl-10 pr-10"
-                        required
+                        className={cn('pl-10 pr-10', errors.password && 'border-destructive')}
                       />
                       <button
                         type="button"
@@ -301,6 +399,7 @@ const RegisterPage = () => {
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
+                    {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
                     {formData.password && (
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -320,112 +419,144 @@ const RegisterPage = () => {
                 </>
               )}
 
-              {/* Step 2: KCSE Details */}
+              {/* Step 2: Index Numbers */}
               {currentStep === 2 && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="indexNumber">KCSE Index Number</Label>
+                    <Label htmlFor="kcseIndexNumber">KCSE Index Number</Label>
                     <Input
-                      id="indexNumber"
+                      id="kcseIndexNumber"
                       type="text"
                       placeholder="e.g., 12345678/2024"
-                      value={formData.indexNumber}
-                      onChange={(e) => updateFormData('indexNumber', e.target.value)}
-                      required
+                      value={formData.kcseIndexNumber}
+                      onChange={(e) => updateFormData('kcseIndexNumber', e.target.value)}
+                      className={cn(errors.kcseIndexNumber && 'border-destructive')}
                     />
+                    {errors.kcseIndexNumber && <p className="text-destructive text-sm">{errors.kcseIndexNumber}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="meanGrade">Mean Grade</Label>
-                    <Select
-                      value={formData.meanGrade}
-                      onValueChange={(value) => updateFormData('meanGrade', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your mean grade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {meanGrades.map((grade) => (
-                          <SelectItem key={grade} value={grade}>
-                            {grade}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="clusterPoints">Cluster Points</Label>
+                    <Label htmlFor="kcpeIndexNumber">KCPE Index Number</Label>
                     <Input
-                      id="clusterPoints"
-                      type="number"
-                      placeholder="Enter your cluster points"
-                      value={formData.clusterPoints}
-                      onChange={(e) => updateFormData('clusterPoints', e.target.value)}
-                      min="0"
-                      max="48"
-                      required
+                      id="kcpeIndexNumber"
+                      type="text"
+                      placeholder="e.g., 12345678"
+                      value={formData.kcpeIndexNumber}
+                      onChange={(e) => updateFormData('kcpeIndexNumber', e.target.value)}
+                      className={cn(errors.kcpeIndexNumber && 'border-destructive')}
                     />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="addSubjectsLater"
-                      checked={formData.addSubjectsLater}
-                      onCheckedChange={(checked) =>
-                        updateFormData('addSubjectsLater', checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="addSubjectsLater" className="text-sm cursor-pointer">
-                      I'll add my subject grades later
-                    </Label>
+                    {errors.kcpeIndexNumber && <p className="text-destructive text-sm">{errors.kcpeIndexNumber}</p>}
                   </div>
                 </>
               )}
 
-              {/* Step 3: Confirmation */}
+              {/* Step 3: KCSE Subject Grades */}
               {currentStep === 3 && (
                 <>
-                  <div className="bg-muted rounded-lg p-4 space-y-3">
-                    <h3 className="font-semibold text-foreground">Review Your Information</h3>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Name:</span>
-                        <p className="font-medium text-foreground">{formData.fullName || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Email:</span>
-                        <p className="font-medium text-foreground">{formData.email || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Phone:</span>
-                        <p className="font-medium text-foreground">{formData.phone || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Index Number:</span>
-                        <p className="font-medium text-foreground">{formData.indexNumber || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Mean Grade:</span>
-                        <p className="font-medium text-foreground">{formData.meanGrade || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Cluster Points:</span>
-                        <p className="font-medium text-foreground">
-                          {formData.clusterPoints || '-'}
-                        </p>
-                      </div>
+                  <Alert className="bg-secondary/10 border-secondary">
+                    <AlertCircle className="h-4 w-4 text-secondary" />
+                    <AlertDescription className="text-secondary">
+                      Add minimum 8 subjects including English/Kiswahili and Mathematics
+                    </AlertDescription>
+                  </Alert>
+
+                  {/* Subject Entry */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-1">
+                      <Label>Subject</Label>
+                      <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {kcseSubjects
+                            .filter(s => !subjects.some(sub => sub.subject === s))
+                            .map((subject) => (
+                              <SelectItem key={subject} value={subject}>
+                                {subject}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Grade</Label>
+                      <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Grade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {kcseGrades.map((grade) => (
+                            <SelectItem key={grade} value={grade}>
+                              {grade}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-end">
+                      <Button type="button" onClick={addSubject} className="w-full" variant="coral">
+                        <Plus className="h-4 w-4 mr-1" /> Add
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  {errors.subjects && <p className="text-destructive text-sm">{errors.subjects}</p>}
+
+                  {/* Added Subjects List */}
+                  {subjects.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Added Subjects ({subjects.length})</Label>
+                      <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-3">
+                        {subjects.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{item.subject}</span>
+                              <span className="text-secondary font-bold">{item.grade}</span>
+                              <span className="text-xs text-muted-foreground">({gradePoints[item.grade]} pts)</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSubject(index)}
+                              className="text-destructive hover:text-destructive/80"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Calculated Results */}
+                  {subjects.length >= 7 && (
+                    <div className="bg-gradient-to-r from-secondary/10 to-primary/10 border-2 border-secondary/30 rounded-lg p-4">
+                      <h3 className="font-bold text-foreground mb-3">Calculated Results</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-background p-3 rounded-lg text-center">
+                          <p className="text-xs text-muted-foreground mb-1">Mean Grade</p>
+                          <p className="text-2xl font-bold text-secondary">{meanGrade}</p>
+                        </div>
+                        <div className="bg-background p-3 rounded-lg text-center">
+                          <p className="text-xs text-muted-foreground mb-1">Total Points</p>
+                          <p className="text-2xl font-bold text-primary">{totalPoints}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        * Based on best Language + Mathematics + Best 5 other subjects
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Terms & Privacy */}
+                  <div className="space-y-3 pt-2">
                     <div className="flex items-start gap-2">
                       <Checkbox
                         id="agreeTerms"
                         checked={formData.agreeTerms}
-                        onCheckedChange={(checked) =>
-                          updateFormData('agreeTerms', checked as boolean)
-                        }
+                        onCheckedChange={(checked) => updateFormData('agreeTerms', checked as boolean)}
                       />
                       <Label htmlFor="agreeTerms" className="text-sm cursor-pointer">
                         I agree to the{' '}
@@ -434,14 +565,13 @@ const RegisterPage = () => {
                         </Link>
                       </Label>
                     </div>
+                    {errors.agreeTerms && <p className="text-destructive text-sm">{errors.agreeTerms}</p>}
 
                     <div className="flex items-start gap-2">
                       <Checkbox
                         id="agreePrivacy"
                         checked={formData.agreePrivacy}
-                        onCheckedChange={(checked) =>
-                          updateFormData('agreePrivacy', checked as boolean)
-                        }
+                        onCheckedChange={(checked) => updateFormData('agreePrivacy', checked as boolean)}
                       />
                       <Label htmlFor="agreePrivacy" className="text-sm cursor-pointer">
                         I agree to the{' '}
@@ -450,31 +580,31 @@ const RegisterPage = () => {
                         </Link>
                       </Label>
                     </div>
+                    {errors.agreePrivacy && <p className="text-destructive text-sm">{errors.agreePrivacy}</p>}
                   </div>
                 </>
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex gap-3 pt-4">
-                {currentStep > 1 && (
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                )}
-                {currentStep < steps.length ? (
-                  <Button type="button" variant="teal" onClick={handleNext} className="flex-1">
-                    Next
-                    <ArrowRight className="ml-2 h-4 w-4" />
+              <div className="flex justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  className={currentStep === 1 ? 'invisible' : ''}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                </Button>
+
+                {currentStep < 3 ? (
+                  <Button type="button" onClick={handleNext} variant="coral">
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button
-                    type="submit"
-                    variant="teal"
-                    className="flex-1"
-                    disabled={!formData.agreeTerms || !formData.agreePrivacy || isLoading}
-                  >
+                  <Button type="submit" variant="teal" disabled={isLoading}>
                     {isLoading ? 'Creating Account...' : 'Create Account'}
+                    <Check className="ml-2 h-4 w-4" />
                   </Button>
                 )}
               </div>

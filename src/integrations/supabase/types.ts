@@ -326,6 +326,7 @@ export type Database = {
           id: string
           id_number: string | null
           index_number: string | null
+          kcpe_index_number: string | null
           mean_grade: string | null
           phone: string | null
           updated_at: string
@@ -342,6 +343,7 @@ export type Database = {
           id?: string
           id_number?: string | null
           index_number?: string | null
+          kcpe_index_number?: string | null
           mean_grade?: string | null
           phone?: string | null
           updated_at?: string
@@ -358,6 +360,7 @@ export type Database = {
           id?: string
           id_number?: string | null
           index_number?: string | null
+          kcpe_index_number?: string | null
           mean_grade?: string | null
           phone?: string | null
           updated_at?: string
