@@ -244,7 +244,7 @@ export const useAllApplications = () => {
         .from('applications')
         .select(`
           *,
-          profiles!applications_user_id_fkey (full_name, email, phone)
+          profiles!applications_user_id_profiles_fkey (full_name, email, phone)
         `)
         .order('created_at', { ascending: false });
       
