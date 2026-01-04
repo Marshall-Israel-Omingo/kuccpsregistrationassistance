@@ -12,11 +12,20 @@ export interface Profile {
   date_of_birth: string | null;
   county: string | null;
   index_number: string | null;
+  kcpe_index_number: string | null;
   mean_grade: string | null;
   cluster_points: number | null;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface SubjectGrade {
+  id: string;
+  user_id: string;
+  subject: string;
+  grade: string;
+  created_at: string;
 }
 
 export const useProfile = () => {
@@ -59,6 +68,61 @@ export const useUpdateProfile = () => {
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+    },
+  });
+};
+
+export const useSubjectGrades = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['subject_grades', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('subject_grades')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('subject');
+
+      if (error) throw error;
+      return data as SubjectGrade[];
+    },
+    enabled: !!user,
+  });
+};
+
+export const useUpdateSubjectGrades = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (grades: { subject: string; grade: string }[]) => {
+      if (!user) throw new Error('Not authenticated');
+
+      // Delete existing grades
+      await supabase
+        .from('subject_grades')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Insert new grades
+      if (grades.length > 0) {
+        const { error } = await supabase
+          .from('subject_grades')
+          .insert(grades.map(g => ({
+            user_id: user.id,
+            subject: g.subject,
+            grade: g.grade,
+          })));
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subject_grades', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
     },
   });
