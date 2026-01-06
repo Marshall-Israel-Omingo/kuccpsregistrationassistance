@@ -18,25 +18,18 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
-import ApplicationPage from "./pages/dashboard/ApplicationPage";
 import DashboardCoursesPage from "./pages/dashboard/DashboardCoursesPage";
+import ShortlistPage from "./pages/dashboard/ShortlistPage";
 import PaymentsPage from "./pages/dashboard/PaymentsPage";
 import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
-import AdminApplicationDetailPage from "./pages/admin/AdminApplicationDetailPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
-import AdminSupportPage from "./pages/admin/AdminSupportPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
-import AdminTemplatesPage from "./pages/admin/settings/AdminTemplatesPage";
-import AdminNotificationsPage from "./pages/admin/settings/AdminNotificationsPage";
-import AdminSecurityPage from "./pages/admin/settings/AdminSecurityPage";
-import AdminSystemPage from "./pages/admin/settings/AdminSystemPage";
 
 const queryClient = new QueryClient();
 
@@ -61,160 +54,20 @@ const App = () => (
               <Route path="/contact" element={<ContactPage />} />
 
               {/* Protected Dashboard Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <DashboardHome />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/courses"
-                element={
-                  <ProtectedRoute>
-                    <DashboardCoursesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/application"
-                element={
-                  <ProtectedRoute>
-                    <ApplicationPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/payments"
-                element={
-                  <ProtectedRoute>
-                    <PaymentsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/notifications"
-                element={
-                  <ProtectedRoute>
-                    <NotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/support"
-                element={
-                  <ProtectedRoute>
-                    <DashboardHome />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+              <Route path="/dashboard/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/dashboard/courses" element={<ProtectedRoute><DashboardCoursesPage /></ProtectedRoute>} />
+              <Route path="/dashboard/shortlist" element={<ProtectedRoute><ShortlistPage /></ProtectedRoute>} />
+              <Route path="/dashboard/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
+              <Route path="/dashboard/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+              <Route path="/dashboard/support" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
 
               {/* Admin Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminDashboard />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/applications"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminApplicationsPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/applications/:applicationId"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminApplicationDetailPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/students"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminStudentsPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/payments"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminPaymentsPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/support"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminSupportPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/reports"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminReportsPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/users"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminUsersPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings/templates"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminTemplatesPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings/notifications"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminNotificationsPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings/security"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminSecurityPage />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/settings/system"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminSystemPage />
-                  </AdminProtectedRoute>
-                }
-              />
+              <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+              <Route path="/admin/students" element={<AdminProtectedRoute><AdminStudentsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/payments" element={<AdminProtectedRoute><AdminPaymentsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/reports" element={<AdminProtectedRoute><AdminReportsPage /></AdminProtectedRoute>} />
+              <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsersPage /></AdminProtectedRoute>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

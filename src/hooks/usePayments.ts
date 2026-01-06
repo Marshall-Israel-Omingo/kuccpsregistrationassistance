@@ -7,7 +7,6 @@ export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 
 export interface Payment {
   id: string;
   user_id: string;
-  application_id: string | null;
   amount: number;
   status: PaymentStatus;
   payment_method: string | null;

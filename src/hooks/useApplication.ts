@@ -2,81 +2,133 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type ApplicationStatus = 'draft' | 'payment_pending' | 'submitted' | 'in_progress' | 'completed' | 'rejected';
+// Platform access types for CourseMatch
+export type AccessStatus = 'free' | 'pending' | 'paid' | 'expired';
 
-export interface Application {
+export interface PlatformAccess {
   id: string;
   user_id: string;
-  status: ApplicationStatus;
-  personal_details_confirmed: boolean;
-  documents_uploaded: boolean;
-  kuccps_reference: string | null;
-  submitted_at: string | null;
-  completed_at: string | null;
+  status: AccessStatus;
+  unlocked_at: string | null;
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CourseSelection {
+export interface Shortlist {
   id: string;
-  application_id: string;
+  user_id: string;
+  name: string;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShortlistCourse {
+  id: string;
+  shortlist_id: string;
   course_id: string;
   course_name: string;
   course_code: string | null;
+  institution_id: string | null;
   institution_name: string | null;
-  cluster_points: number | null;
   priority: number;
+  notes: string | null;
+  fit_score: number | null;
   created_at: string;
 }
 
-export const useApplication = () => {
+export const usePlatformAccess = () => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['application', user?.id],
+    queryKey: ['platform_access', user?.id],
     queryFn: async () => {
       if (!user) return null;
       
       const { data, error } = await supabase
-        .from('applications')
+        .from('platform_access')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (error) throw error;
-      return data as Application | null;
+      return data as PlatformAccess | null;
     },
     enabled: !!user,
   });
 };
 
-export const useCourseSelections = (applicationId: string | undefined) => {
+export const useShortlists = () => {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['course_selections', applicationId],
+    queryKey: ['shortlists', user?.id],
     queryFn: async () => {
-      if (!applicationId) return [];
+      if (!user) return [];
       
       const { data, error } = await supabase
-        .from('course_selections')
+        .from('shortlists')
         .select('*')
-        .eq('application_id', applicationId)
-        .order('priority', { ascending: true });
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as CourseSelection[];
+      return data as Shortlist[];
     },
-    enabled: !!applicationId,
+    enabled: !!user,
   });
 };
 
-export const useAddCourseSelection = () => {
+export const usePrimaryShortlist = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['primary_shortlist', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('shortlists')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_primary', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as Shortlist | null;
+    },
+    enabled: !!user,
+  });
+};
+
+export const useShortlistCourses = (shortlistId: string | undefined) => {
+  return useQuery({
+    queryKey: ['shortlist_courses', shortlistId],
+    queryFn: async () => {
+      if (!shortlistId) return [];
+      
+      const { data, error } = await supabase
+        .from('shortlist_courses')
+        .select('*')
+        .eq('shortlist_id', shortlistId)
+        .order('priority', { ascending: true });
+
+      if (error) throw error;
+      return data as ShortlistCourse[];
+    },
+    enabled: !!shortlistId,
+  });
+};
+
+export const useAddToShortlist = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (selection: Omit<CourseSelection, 'id' | 'created_at'>) => {
+    mutationFn: async (course: Omit<ShortlistCourse, 'id' | 'created_at'>) => {
       const { data, error } = await supabase
-        .from('course_selections')
-        .insert(selection)
+        .from('shortlist_courses')
+        .insert(course)
         .select()
         .single();
 
@@ -84,42 +136,66 @@ export const useAddCourseSelection = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['course_selections', variables.application_id] });
+      queryClient.invalidateQueries({ queryKey: ['shortlist_courses', variables.shortlist_id] });
     },
   });
 };
 
-export const useRemoveCourseSelection = () => {
+export const useRemoveFromShortlist = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, applicationId }: { id: string; applicationId: string }) => {
+    mutationFn: async ({ id, shortlistId }: { id: string; shortlistId: string }) => {
       const { error } = await supabase
-        .from('course_selections')
+        .from('shortlist_courses')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      return { applicationId };
+      return { shortlistId };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['course_selections', result.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ['shortlist_courses', result.shortlistId] });
     },
   });
 };
 
-export const useUpdateApplication = () => {
+export const useUpdateShortlistCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, shortlistId, updates }: { 
+      id: string; 
+      shortlistId: string;
+      updates: Partial<Pick<ShortlistCourse, 'priority' | 'notes'>> 
+    }) => {
+      const { data, error } = await supabase
+        .from('shortlist_courses')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, shortlistId };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['shortlist_courses', result.shortlistId] });
+    },
+  });
+};
+
+export const useCreateShortlist = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Application>) => {
+    mutationFn: async (name: string) => {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
-        .from('applications')
-        .update(updates)
-        .eq('user_id', user.id)
+        .from('shortlists')
+        .insert({ user_id: user.id, name })
         .select()
         .single();
 
@@ -127,7 +203,7 @@ export const useUpdateApplication = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['application', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['shortlists', user?.id] });
     },
   });
 };
