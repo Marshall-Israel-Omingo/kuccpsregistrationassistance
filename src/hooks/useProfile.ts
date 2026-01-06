@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { gradePoints } from '@/lib/gradeCalculations';
 
 export interface Profile {
   id: string;
@@ -8,14 +9,11 @@ export interface Profile {
   full_name: string;
   email: string;
   phone: string | null;
-  id_number: string | null;
-  date_of_birth: string | null;
   county: string | null;
-  index_number: string | null;
-  kcpe_index_number: string | null;
+  secondary_school: string | null;
+  year_of_completion: number | null;
   mean_grade: string | null;
-  cluster_points: number | null;
-  avatar_url: string | null;
+  aggregate_points: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +23,7 @@ export interface SubjectGrade {
   user_id: string;
   subject: string;
   grade: string;
+  points: number;
   created_at: string;
 }
 
@@ -108,15 +107,18 @@ export const useUpdateSubjectGrades = () => {
         .delete()
         .eq('user_id', user.id);
 
-      // Insert new grades
+      // Insert new grades with points
       if (grades.length > 0) {
+        const gradesWithPoints = grades.map(g => ({
+          user_id: user.id,
+          subject: g.subject,
+          grade: g.grade,
+          points: gradePoints[g.grade] || 0,
+        }));
+
         const { error } = await supabase
           .from('subject_grades')
-          .insert(grades.map(g => ({
-            user_id: user.id,
-            subject: g.subject,
-            grade: g.grade,
-          })));
+          .insert(gradesWithPoints);
 
         if (error) throw error;
       }
