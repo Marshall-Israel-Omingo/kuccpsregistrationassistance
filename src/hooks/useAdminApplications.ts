@@ -1,83 +1,106 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-// For CourseMatch, we track platform access and shortlists instead of applications
-export interface UserWithAccess {
+type ApplicationStatus = Database['public']['Enums']['application_status'];
+
+export interface ApplicationWithProfile {
   id: string;
   user_id: string;
-  email: string;
-  full_name: string;
-  phone: string | null;
-  mean_grade: string | null;
-  aggregate_points: number | null;
+  status: ApplicationStatus;
+  personal_details_confirmed: boolean | null;
+  documents_uploaded: boolean | null;
+  kuccps_reference: string | null;
+  submitted_at: string | null;
+  completed_at: string | null;
   created_at: string;
-  platform_access: {
-    status: 'free' | 'pending' | 'paid' | 'expired';
-    unlocked_at: string | null;
+  updated_at: string;
+  profiles: {
+    full_name: string;
+    email: string;
+    phone: string | null;
+    date_of_birth: string | null;
+    county: string | null;
+    id_number: string | null;
+    index_number: string | null;
+    mean_grade: string | null;
+    cluster_points: number | null;
   } | null;
 }
 
-export const useAllUsersWithAccess = () => {
+export const useApplicationDetails = (applicationId: string | undefined) => {
   return useQuery({
-    queryKey: ['all-users-access'],
+    queryKey: ['admin-application', applicationId],
     queryFn: async () => {
-      // Get profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+      if (!applicationId) return null;
+      
+      // First get the application
+      const { data: application, error: appError } = await supabase
+        .from('applications')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('id', applicationId)
+        .maybeSingle();
 
-      if (profilesError) throw profilesError;
+      if (appError) throw appError;
+      if (!application) return null;
 
-      // Get platform access
-      const { data: accessData, error: accessError } = await supabase
-        .from('platform_access')
-        .select('*');
+      // Then get the profile for this user
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, email, phone, date_of_birth, county, id_number, index_number, mean_grade, cluster_points')
+        .eq('user_id', application.user_id)
+        .maybeSingle();
 
-      if (accessError) throw accessError;
+      if (profileError) throw profileError;
 
-      // Join the data
-      const usersWithAccess = profiles.map(profile => ({
-        ...profile,
-        platform_access: accessData.find(a => a.user_id === profile.user_id) || null,
-      }));
-
-      return usersWithAccess as UserWithAccess[];
+      return {
+        ...application,
+        profiles: profile,
+      } as ApplicationWithProfile;
     },
+    enabled: !!applicationId,
   });
 };
 
-export const useUserShortlistCourses = (userId: string | undefined) => {
+export const useApplicationCourseSelections = (applicationId: string | undefined) => {
   return useQuery({
-    queryKey: ['admin-user-shortlist', userId],
+    queryKey: ['admin-course-selections', applicationId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!applicationId) return [];
       
-      // First get the user's shortlists
-      const { data: shortlists, error: shortlistError } = await supabase
-        .from('shortlists')
-        .select('id')
-        .eq('user_id', userId);
-
-      if (shortlistError) throw shortlistError;
-      if (!shortlists || shortlists.length === 0) return [];
-
-      // Get all courses from all shortlists
-      const shortlistIds = shortlists.map(s => s.id);
-      const { data: courses, error: coursesError } = await supabase
-        .from('shortlist_courses')
+      const { data, error } = await supabase
+        .from('course_selections')
         .select('*')
-        .in('shortlist_id', shortlistIds)
+        .eq('application_id', applicationId)
         .order('priority', { ascending: true });
 
-      if (coursesError) throw coursesError;
-      return courses;
+      if (error) throw error;
+      return data;
     },
-    enabled: !!userId,
+    enabled: !!applicationId,
   });
 };
 
-export const useUserPayments = (userId: string | undefined) => {
+export const useApplicationDocuments = (applicationId: string | undefined) => {
+  return useQuery({
+    queryKey: ['admin-documents', applicationId],
+    queryFn: async () => {
+      if (!applicationId) return [];
+      
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('application_id', applicationId)
+        .order('uploaded_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!applicationId,
+  });
+};
+
+export const useApplicationPayments = (userId: string | undefined) => {
   return useQuery({
     queryKey: ['admin-user-payments', userId],
     queryFn: async () => {
@@ -96,36 +119,35 @@ export const useUserPayments = (userId: string | undefined) => {
   });
 };
 
-export const useUpdateUserAccess = () => {
+export const useUpdateApplicationStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
-      userId,
-      status,
+      applicationId,
+      updates,
     }: {
-      userId: string;
-      status: 'free' | 'pending' | 'paid' | 'expired';
+      applicationId: string;
+      updates: Partial<{
+        status: ApplicationStatus;
+        kuccps_reference: string;
+        completed_at: string;
+        submitted_at: string;
+      }>;
     }) => {
-      const updateData: Record<string, unknown> = { status };
-      
-      if (status === 'paid') {
-        updateData.unlocked_at = new Date().toISOString();
-      }
-
       const { data, error } = await supabase
-        .from('platform_access')
-        .update(updateData)
-        .eq('user_id', userId)
+        .from('applications')
+        .update(updates)
+        .eq('id', applicationId)
         .select()
         .single();
 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['all-users-access'] });
-      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-application', variables.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ['allApplications'] });
     },
   });
 };

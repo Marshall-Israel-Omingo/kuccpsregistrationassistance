@@ -7,15 +7,38 @@ export interface UserRole {
   user_id: string;
   role: 'admin' | 'moderator' | 'support' | 'user';
   created_at: string;
+}
+
+export interface SystemSetting {
+  id: string;
+  category: string;
+  key: string;
+  value: Record<string, unknown>;
   updated_at: string;
 }
 
-export interface ActivityLog {
+export interface AuditLog {
   id: string;
   user_id: string | null;
   event_type: string;
-  event_data: Record<string, unknown>;
+  severity: string;
+  description: string;
+  metadata: Record<string, unknown>;
+  ip_address: string | null;
   created_at: string;
+}
+
+export interface NotificationTemplate {
+  id: string;
+  name: string;
+  type: string;
+  subject: string | null;
+  content: string;
+  variables: string[];
+  trigger_event: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useIsAdmin = () => {
@@ -110,17 +133,59 @@ export const useDeleteUserRole = () => {
   });
 };
 
-export const useActivityLogs = (filters?: { eventType?: string; limit?: number }) => {
+export const useSystemSettings = (category?: string) => {
   return useQuery({
-    queryKey: ['activityLogs', filters],
+    queryKey: ['systemSettings', category],
+    queryFn: async () => {
+      let query = supabase.from('system_settings').select('*');
+      
+      if (category) {
+        query = query.eq('category', category);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as SystemSetting[];
+    },
+  });
+};
+
+export const useUpdateSystemSetting = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ category, key, value }: { category: string; key: string; value: Record<string, unknown> }) => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .update({ value: value as any })
+        .eq('category', category)
+        .eq('key', key)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['systemSettings'] });
+    },
+  });
+};
+
+export const useAuditLogs = (filters?: { eventType?: string; severity?: string; limit?: number }) => {
+  return useQuery({
+    queryKey: ['auditLogs', filters],
     queryFn: async () => {
       let query = supabase
-        .from('activity_logs')
+        .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (filters?.eventType) {
         query = query.eq('event_type', filters.eventType);
+      }
+      if (filters?.severity) {
+        query = query.eq('severity', filters.severity);
       }
       if (filters?.limit) {
         query = query.limit(filters.limit);
@@ -130,7 +195,61 @@ export const useActivityLogs = (filters?: { eventType?: string; limit?: number }
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as ActivityLog[];
+      return data as AuditLog[];
+    },
+  });
+};
+
+export const useNotificationTemplates = () => {
+  return useQuery({
+    queryKey: ['notificationTemplates'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('notification_templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as NotificationTemplate[];
+    },
+  });
+};
+
+export const useUpdateNotificationTemplate = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<NotificationTemplate> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('notification_templates')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationTemplates'] });
+    },
+  });
+};
+
+export const useAllApplications = () => {
+  return useQuery({
+    queryKey: ['allApplications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
+          *,
+          profiles!applications_user_id_profiles_fkey (full_name, email, phone)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
     },
   });
 };
@@ -165,12 +284,12 @@ export const useAllPayments = () => {
   });
 };
 
-export const useAllPlatformAccess = () => {
+export const useAllSupportTickets = () => {
   return useQuery({
-    queryKey: ['allPlatformAccess'],
+    queryKey: ['allSupportTickets'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('platform_access')
+        .from('support_tickets')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -184,52 +303,22 @@ export const useAdminStats = () => {
   return useQuery({
     queryKey: ['adminStats'],
     queryFn: async () => {
-      const [profiles, payments, platformAccess, shortlists] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }),
+      const [applications, payments, profiles, tickets] = await Promise.all([
+        supabase.from('applications').select('status', { count: 'exact' }),
         supabase.from('payments').select('status, amount', { count: 'exact' }),
-        supabase.from('platform_access').select('status', { count: 'exact' }),
-        supabase.from('shortlists').select('id', { count: 'exact' }),
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('support_tickets').select('status', { count: 'exact' }),
       ]);
       
-      const paidUsers = (platformAccess.data || []).filter(pa => pa.status === 'paid').length;
-      const totalRevenue = (payments.data || [])
-        .filter(p => p.status === 'completed')
-        .reduce((sum, p) => sum + Number(p.amount), 0);
-      
       return {
-        totalStudents: profiles.count || 0,
+        totalApplications: applications.count || 0,
         totalPayments: payments.count || 0,
-        paidUsers,
-        totalRevenue,
-        totalShortlists: shortlists.count || 0,
+        totalStudents: profiles.count || 0,
+        totalTickets: tickets.count || 0,
+        applications: applications.data || [],
         payments: payments.data || [],
-        platformAccess: platformAccess.data || [],
+        tickets: tickets.data || [],
       };
-    },
-  });
-};
-
-export const useUpdatePlatformAccess = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ userId, status }: { userId: string; status: 'free' | 'pending' | 'paid' | 'expired' }) => {
-      const { data, error } = await supabase
-        .from('platform_access')
-        .update({ 
-          status,
-          unlocked_at: status === 'paid' ? new Date().toISOString() : null,
-        })
-        .eq('user_id', userId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allPlatformAccess'] });
-      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
     },
   });
 };

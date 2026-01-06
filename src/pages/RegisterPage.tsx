@@ -192,7 +192,6 @@ const RegisterPage = () => {
         user_id: newUser.id,
         subject: s.subject,
         grade: s.grade,
-        points: gradePoints[s.grade] || 0,
       }));
 
       await supabase.from('subject_grades').insert(subjectGradesData);
@@ -200,7 +199,7 @@ const RegisterPage = () => {
 
     toast({
       title: 'Account Created!',
-      description: 'Welcome to CourseMatch!',
+      description: 'Welcome to KUCCPS Registration Service.',
     });
     navigate('/dashboard');
     setIsLoading(false);

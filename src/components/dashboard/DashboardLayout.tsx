@@ -35,7 +35,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/profile', label: 'My Profile', icon: User },
   { href: '/dashboard/courses', label: 'Browse Courses', icon: BookOpen },
-  { href: '/dashboard/shortlist', label: 'My Shortlist', icon: FileText },
+  { href: '/dashboard/application', label: 'My Application', icon: FileText },
   { href: '/dashboard/support', label: 'Support', icon: HelpCircle },
   { href: '/dashboard/payments', label: 'Payments', icon: Wallet },
 ];
@@ -92,7 +92,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                 <GraduationCap className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold text-foreground hidden sm:block">CourseMatch</span>
+              <span className="text-lg font-bold text-foreground hidden sm:block">KUCCPS</span>
             </Link>
           </div>
 
@@ -113,6 +113,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-secondary text-secondary-foreground text-sm">
                       {getInitials(profile?.full_name)}
                     </AvatarFallback>
