@@ -14,210 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      applications: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          documents_uploaded: boolean | null
-          id: string
-          kuccps_reference: string | null
-          personal_details_confirmed: boolean | null
-          status: Database["public"]["Enums"]["application_status"]
-          submitted_at: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          documents_uploaded?: boolean | null
-          id?: string
-          kuccps_reference?: string | null
-          personal_details_confirmed?: boolean | null
-          status?: Database["public"]["Enums"]["application_status"]
-          submitted_at?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          documents_uploaded?: boolean | null
-          id?: string
-          kuccps_reference?: string | null
-          personal_details_confirmed?: boolean | null
-          status?: Database["public"]["Enums"]["application_status"]
-          submitted_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "applications_user_id_profiles_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      audit_logs: {
+      activity_logs: {
         Row: {
           created_at: string
-          description: string
+          event_data: Json | null
           event_type: string
           id: string
-          ip_address: string | null
-          metadata: Json | null
-          severity: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
-          description: string
+          event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: string | null
-          metadata?: Json | null
-          severity?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
-          description?: string
+          event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: string | null
-          metadata?: Json | null
-          severity?: string
           user_id?: string | null
         }
         Relationships: []
       }
-      course_selections: {
+      career_assessments: {
         Row: {
-          application_id: string
-          cluster_points: number | null
-          course_code: string | null
-          course_id: string
-          course_name: string
           created_at: string
           id: string
-          institution_name: string | null
-          priority: number
-        }
-        Insert: {
-          application_id: string
-          cluster_points?: number | null
-          course_code?: string | null
-          course_id: string
-          course_name: string
-          created_at?: string
-          id?: string
-          institution_name?: string | null
-          priority: number
-        }
-        Update: {
-          application_id?: string
-          cluster_points?: number | null
-          course_code?: string | null
-          course_id?: string
-          course_name?: string
-          created_at?: string
-          id?: string
-          institution_name?: string | null
-          priority?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "course_selections_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "applications"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      documents: {
-        Row: {
-          application_id: string | null
-          document_type: string
-          file_name: string
-          file_size: number | null
-          file_url: string
-          id: string
-          uploaded_at: string
+          question_id: string
+          response: string
           user_id: string
         }
         Insert: {
-          application_id?: string | null
-          document_type: string
-          file_name: string
-          file_size?: number | null
-          file_url: string
+          created_at?: string
           id?: string
-          uploaded_at?: string
+          question_id: string
+          response: string
           user_id: string
         }
         Update: {
-          application_id?: string | null
-          document_type?: string
-          file_name?: string
-          file_size?: number | null
-          file_url?: string
+          created_at?: string
           id?: string
-          uploaded_at?: string
+          question_id?: string
+          response?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "documents_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "applications"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      notification_templates: {
+      career_interests: {
         Row: {
-          content: string
           created_at: string
-          created_by: string | null
           id: string
-          is_active: boolean | null
-          name: string
-          subject: string | null
-          trigger_event: string | null
-          type: string
-          updated_at: string
-          variables: Json | null
+          interest_category: string
+          interest_level: number
+          user_id: string
         }
         Insert: {
-          content: string
           created_at?: string
-          created_by?: string | null
           id?: string
-          is_active?: boolean | null
-          name: string
-          subject?: string | null
-          trigger_event?: string | null
-          type: string
-          updated_at?: string
-          variables?: Json | null
+          interest_category: string
+          interest_level?: number
+          user_id: string
         }
         Update: {
-          content?: string
           created_at?: string
-          created_by?: string | null
           id?: string
-          is_active?: boolean | null
-          name?: string
-          subject?: string | null
-          trigger_event?: string | null
-          type?: string
-          updated_at?: string
-          variables?: Json | null
+          interest_category?: string
+          interest_level?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      course_comparisons: {
+        Row: {
+          course_ids: string[]
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          course_ids: string[]
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          course_ids?: string[]
+          created_at?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -257,7 +143,6 @@ export type Database = {
       payments: {
         Row: {
           amount: number
-          application_id: string | null
           created_at: string
           id: string
           mpesa_receipt: string | null
@@ -271,7 +156,6 @@ export type Database = {
         }
         Insert: {
           amount?: number
-          application_id?: string | null
           created_at?: string
           id?: string
           mpesa_receipt?: string | null
@@ -285,7 +169,6 @@ export type Database = {
         }
         Update: {
           amount?: number
-          application_id?: string | null
           created_at?: string
           id?: string
           mpesa_receipt?: string | null
@@ -297,72 +180,155 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "payments_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "applications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_user_id_profiles_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
-      profiles: {
+      platform_access: {
         Row: {
-          avatar_url: string | null
-          cluster_points: number | null
-          county: string | null
           created_at: string
-          date_of_birth: string | null
-          email: string
-          full_name: string
+          expires_at: string | null
           id: string
-          id_number: string | null
-          index_number: string | null
-          kcpe_index_number: string | null
-          mean_grade: string | null
-          phone: string | null
+          status: Database["public"]["Enums"]["access_status"]
+          unlocked_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          avatar_url?: string | null
-          cluster_points?: number | null
-          county?: string | null
           created_at?: string
-          date_of_birth?: string | null
-          email: string
-          full_name: string
+          expires_at?: string | null
           id?: string
-          id_number?: string | null
-          index_number?: string | null
-          kcpe_index_number?: string | null
-          mean_grade?: string | null
-          phone?: string | null
+          status?: Database["public"]["Enums"]["access_status"]
+          unlocked_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          avatar_url?: string | null
-          cluster_points?: number | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["access_status"]
+          unlocked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          aggregate_points: number | null
+          county: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          mean_grade: string | null
+          phone: string | null
+          secondary_school: string | null
+          updated_at: string
+          user_id: string
+          year_of_completion: number | null
+        }
+        Insert: {
+          aggregate_points?: number | null
           county?: string | null
           created_at?: string
-          date_of_birth?: string | null
+          email: string
+          full_name: string
+          id?: string
+          mean_grade?: string | null
+          phone?: string | null
+          secondary_school?: string | null
+          updated_at?: string
+          user_id: string
+          year_of_completion?: number | null
+        }
+        Update: {
+          aggregate_points?: number | null
+          county?: string | null
+          created_at?: string
           email?: string
           full_name?: string
           id?: string
-          id_number?: string | null
-          index_number?: string | null
-          kcpe_index_number?: string | null
           mean_grade?: string | null
           phone?: string | null
+          secondary_school?: string | null
+          updated_at?: string
+          user_id?: string
+          year_of_completion?: number | null
+        }
+        Relationships: []
+      }
+      shortlist_courses: {
+        Row: {
+          course_code: string | null
+          course_id: string
+          course_name: string
+          created_at: string
+          fit_score: number | null
+          id: string
+          institution_id: string | null
+          institution_name: string | null
+          notes: string | null
+          priority: number
+          shortlist_id: string
+        }
+        Insert: {
+          course_code?: string | null
+          course_id: string
+          course_name: string
+          created_at?: string
+          fit_score?: number | null
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          notes?: string | null
+          priority?: number
+          shortlist_id: string
+        }
+        Update: {
+          course_code?: string | null
+          course_id?: string
+          course_name?: string
+          created_at?: string
+          fit_score?: number | null
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          notes?: string | null
+          priority?: number
+          shortlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shortlist_courses_shortlist_id_fkey"
+            columns: ["shortlist_id"]
+            isOneToOne: false
+            referencedRelation: "shortlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shortlists: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
           updated_at?: string
           user_id?: string
         }
@@ -373,6 +339,7 @@ export type Database = {
           created_at: string
           grade: string
           id: string
+          points: number
           subject: string
           user_id: string
         }
@@ -380,6 +347,7 @@ export type Database = {
           created_at?: string
           grade: string
           id?: string
+          points: number
           subject: string
           user_id: string
         }
@@ -387,99 +355,11 @@ export type Database = {
           created_at?: string
           grade?: string
           id?: string
+          points?: number
           subject?: string
           user_id?: string
         }
         Relationships: []
-      }
-      support_tickets: {
-        Row: {
-          category: string
-          created_at: string
-          id: string
-          status: string
-          subject: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          id?: string
-          status?: string
-          subject: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          id?: string
-          status?: string
-          subject?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      system_settings: {
-        Row: {
-          category: string
-          id: string
-          key: string
-          updated_at: string
-          updated_by: string | null
-          value: Json
-        }
-        Insert: {
-          category: string
-          id?: string
-          key: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: Json
-        }
-        Update: {
-          category?: string
-          id?: string
-          key?: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: Json
-        }
-        Relationships: []
-      }
-      ticket_messages: {
-        Row: {
-          created_at: string
-          id: string
-          message: string
-          sender_type: string
-          ticket_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          message: string
-          sender_type: string
-          ticket_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          message?: string
-          sender_type?: string
-          ticket_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ticket_messages_ticket_id_fkey"
-            columns: ["ticket_id"]
-            isOneToOne: false
-            referencedRelation: "support_tickets"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {
@@ -510,24 +390,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
+      access_status: "free" | "pending" | "paid" | "expired"
       app_role: "admin" | "moderator" | "support" | "user"
-      application_status:
-        | "draft"
-        | "payment_pending"
-        | "submitted"
-        | "in_progress"
-        | "completed"
-        | "rejected"
       payment_status:
         | "pending"
         | "processing"
@@ -661,15 +528,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_status: ["free", "pending", "paid", "expired"],
       app_role: ["admin", "moderator", "support", "user"],
-      application_status: [
-        "draft",
-        "payment_pending",
-        "submitted",
-        "in_progress",
-        "completed",
-        "rejected",
-      ],
       payment_status: [
         "pending",
         "processing",
