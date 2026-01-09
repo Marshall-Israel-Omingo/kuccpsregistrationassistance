@@ -1,13 +1,12 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
+  ClipboardCheck,
   Search,
-  CreditCard,
-  FileText,
-  CheckCircle2,
+  BarChart3,
+  BookmarkCheck,
   ArrowRight,
   HelpCircle,
-  ChevronDown,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -21,89 +20,89 @@ import {
 
 const steps = [
   {
-    icon: Search,
+    icon: ClipboardCheck,
     number: '01',
-    title: 'Browse & Select Courses',
+    title: 'Enter Your KCSE Grades',
     description:
-      'Explore our comprehensive course catalog with over 500+ programs across 42 universities and 272 public colleges. Use our smart filters to find courses that match your qualifications.',
+      'Input your subject grades and we\'ll calculate your cluster points automatically. This helps us determine which courses you qualify for.',
+    details: [
+      'Enter all your KCSE subjects and grades',
+      'Cluster points calculated automatically',
+      'Mean grade computed in real-time',
+      'Supports all 31 KCSE subjects',
+    ],
+  },
+  {
+    icon: Search,
+    number: '02',
+    title: 'Browse & Search Courses',
+    description:
+      'Explore our comprehensive course catalog with over 500+ programs across 42 universities and 272 public colleges.',
     details: [
       'Search by course name, institution, or field of study',
-      'Filter by cluster points and mean grade requirements',
-      'View eligibility status instantly when logged in',
-      'Compare programs across different institutions',
+      'Filter by cluster points and grade requirements',
+      'View detailed course information',
+      'Discover courses you didn\'t know existed',
     ],
   },
   {
-    icon: CreditCard,
-    number: '02',
-    title: 'Pay for Our Service',
-    description:
-      'Secure your application with our affordable KES 500 service fee via M-Pesa. This one-time payment covers your complete KUCCPS registration process.',
-    details: [
-      'Convenient M-Pesa payment option',
-      'Instant payment confirmation',
-      'Money-back guarantee if registration fails',
-      'Receipt sent to your email',
-    ],
-  },
-  {
-    icon: FileText,
+    icon: BarChart3,
     number: '03',
-    title: 'Submit Your Details',
+    title: 'Check Your Eligibility',
     description:
-      'Provide your KCSE results, personal information, and up to 4 course choices. Our system validates your eligibility in real-time.',
+      'Instantly see which courses you qualify for based on your grades. No more guessing—know exactly where you stand.',
     details: [
-      'Easy step-by-step form submission',
-      'Real-time eligibility validation',
-      'Upload supporting documents securely',
-      'Review and confirm before submission',
+      'Real-time eligibility checking',
+      'See matching subject requirements',
+      'Understand minimum cut-off points',
+      'Get personalized recommendations',
     ],
   },
   {
-    icon: CheckCircle2,
+    icon: BookmarkCheck,
     number: '04',
-    title: 'We Register You',
+    title: 'Shortlist & Compare',
     description:
-      'Sit back and relax while our KUCCPS experts handle your registration. We submit your application and send you confirmation within 48 hours.',
+      'Save courses you\'re interested in to your shortlist. Compare programs side by side to make informed decisions.',
     details: [
-      'Expert KUCCPS specialists process your application',
-      'Error-free submission guaranteed',
-      '48-hour turnaround time',
-      'Email and SMS confirmation sent',
+      'Create and manage your course shortlist',
+      'Compare up to 4 courses at once',
+      'Export your selections',
+      'Share with parents or advisors',
     ],
   },
 ];
 
 const faqs = [
   {
-    question: 'How much does your service cost?',
+    question: 'Is CourseMatch free to use?',
     answer:
-      'Our service fee is KES 500 per application. This covers the complete KUCCPS registration process, including expert verification, submission, and confirmation.',
+      'Yes! CourseMatch is completely free to browse courses and check your eligibility. Create an account to save your shortlist and get personalized recommendations.',
   },
   {
-    question: 'How long does the registration process take?',
+    question: 'How accurate is the eligibility checker?',
     answer:
-      'Once you submit your details and payment, we process your KUCCPS registration within 48 hours. You will receive email and SMS confirmation once complete.',
+      'Our eligibility data is sourced from official university requirements and updated regularly. However, we recommend verifying with the specific institution before making final decisions.',
   },
   {
-    question: 'What if my registration fails?',
+    question: 'Do you handle university applications?',
     answer:
-      'We offer a full money-back guarantee. If we are unable to complete your KUCCPS registration for any reason attributable to our service, you will receive a complete refund.',
+      'CourseMatch is a course discovery platform. We help you find and compare courses, but the actual application process is handled through KUCCPS or directly with institutions.',
   },
   {
-    question: 'Can I choose more than one course?',
+    question: 'How many courses are available on CourseMatch?',
     answer:
-      'Yes! Following KUCCPS guidelines, you can select up to 4 course choices in order of preference. We will register all your choices as submitted.',
+      'We have over 500 courses from 42 universities and 272 public colleges across Kenya. We\'re constantly adding new programs to our database.',
   },
   {
-    question: 'What documents do I need to provide?',
+    question: 'Can I save courses I\'m interested in?',
     answer:
-      'You will need to provide your KCSE result slip, a copy of your national ID, and fill in your personal details including contact information and subject grades.',
+      'Yes! Create a free account to access your personal shortlist where you can save, organize, and compare courses you\'re considering.',
   },
   {
-    question: 'Is my personal information secure?',
+    question: 'How do cluster points work?',
     answer:
-      'Absolutely. We use bank-level encryption to protect all your data. Your information is only used for the KUCCPS registration process and is never shared with third parties.',
+      'Cluster points are calculated based on your performance in specific subject combinations relevant to your desired course. Different courses require different subject clusters.',
   },
 ];
 
@@ -111,10 +110,10 @@ const HowItWorksPage = () => {
   return (
     <>
       <Helmet>
-        <title>How It Works | KUCCPS Registration Service</title>
+        <title>How It Works | CourseMatch - Find Your Perfect Course</title>
         <meta
           name="description"
-          content="Learn how our KUCCPS registration service works in 4 simple steps. Browse courses, pay, submit details, and we handle your registration."
+          content="Learn how CourseMatch helps you discover the perfect university course. Enter your grades, browse courses, check eligibility, and compare programs."
         />
       </Helmet>
 
@@ -126,11 +125,11 @@ const HowItWorksPage = () => {
           <section className="gradient-coral py-16">
             <div className="container mx-auto px-4 text-center">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-4">
-                How It Works
+                How CourseMatch Works
               </h1>
               <p className="text-primary-foreground/90 text-lg max-w-2xl mx-auto">
-                Get your KUCCPS registration done in 4 simple steps. We've streamlined the
-                process so you can focus on your future.
+                Finding your perfect course is easy. Just follow these four simple steps 
+                to discover programs that match your qualifications and goals.
               </p>
             </div>
           </section>
@@ -173,7 +172,7 @@ const HowItWorksPage = () => {
                         <ul className="space-y-2">
                           {step.details.map((detail, i) => (
                             <li key={i} className="flex items-center gap-2 text-sm">
-                              <CheckCircle2 className="h-4 w-4 text-secondary flex-shrink-0" />
+                              <div className="h-1.5 w-1.5 rounded-full bg-secondary flex-shrink-0" />
                               <span className="text-foreground">{detail}</span>
                             </li>
                           ))}
@@ -186,53 +185,8 @@ const HowItWorksPage = () => {
             </div>
           </section>
 
-          {/* Pricing Section */}
-          <section className="py-20 bg-muted">
-            <div className="container mx-auto px-4">
-              <div className="max-w-2xl mx-auto text-center">
-                <span className="inline-block px-4 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-semibold mb-4">
-                  Simple Pricing
-                </span>
-                <h2 className="text-3xl font-bold text-foreground mb-4">
-                  One Price. Everything Included.
-                </h2>
-                <p className="text-muted-foreground mb-8">
-                  No hidden fees, no surprises. Pay once and we handle everything.
-                </p>
-
-                <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
-                  <div className="text-5xl font-bold text-secondary mb-2">KES 500</div>
-                  <div className="text-muted-foreground mb-6">One-time service fee</div>
-
-                  <div className="space-y-3 text-left mb-8">
-                    {[
-                      'Complete KUCCPS registration',
-                      'Up to 4 course choices',
-                      '48-hour processing',
-                      'Email & SMS confirmation',
-                      'Expert verification',
-                      'Money-back guarantee',
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-secondary" />
-                        <span className="text-foreground">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link to="/register">
-                    <Button variant="teal" size="lg" className="w-full">
-                      Get Started Now
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* FAQ Section */}
-          <section className="py-20 bg-card">
+          <section className="py-20 bg-muted">
             <div className="container mx-auto px-4">
               <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-12">
@@ -252,7 +206,7 @@ const HowItWorksPage = () => {
                     <AccordionItem
                       key={index}
                       value={`item-${index}`}
-                      className="bg-muted rounded-lg border-none px-6"
+                      className="bg-card rounded-lg border-none px-6"
                     >
                       <AccordionTrigger className="text-left text-foreground hover:text-secondary hover:no-underline py-4">
                         <div className="flex items-center gap-3">
@@ -274,21 +228,22 @@ const HowItWorksPage = () => {
           <section className="py-16 gradient-coral">
             <div className="container mx-auto px-4 text-center">
               <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-                Ready to Get Started?
+                Ready to Find Your Perfect Course?
               </h2>
               <p className="text-primary-foreground/90 mb-8 max-w-xl mx-auto">
-                Join thousands of students who have successfully registered through our platform.
+                Start exploring over 500 courses from universities and colleges across Kenya.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/register">
+                <Link to="/courses">
                   <Button variant="hero" size="lg">
-                    Start Your Application
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <Search className="mr-2 h-5 w-5" />
+                    Browse Courses
                   </Button>
                 </Link>
-                <Link to="/courses">
+                <Link to="/register">
                   <Button variant="hero-outline" size="lg">
-                    Browse Courses
+                    Create Free Account
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </div>

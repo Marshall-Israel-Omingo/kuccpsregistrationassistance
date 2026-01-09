@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Target, Eye, Heart, Users, Award, Shield, ArrowRight } from 'lucide-react';
+import { Target, Eye, Heart, Users, Award, Shield, ArrowRight, Search } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,40 +9,40 @@ const values = [
   {
     icon: Heart,
     title: 'Student-First Approach',
-    description: 'Every decision we make puts students at the center. Your success is our success.',
+    description: 'Every feature we build puts students at the center. Your success is our success.',
   },
   {
     icon: Shield,
-    title: 'Trust & Transparency',
-    description: 'We believe in honest communication and keeping you informed at every step.',
+    title: 'Trusted Information',
+    description: 'We provide accurate, verified course data you can rely on for your decisions.',
   },
   {
     icon: Award,
     title: 'Excellence in Service',
-    description: 'We strive for perfection in everything we do, from registration to support.',
+    description: 'We strive to deliver the best course browsing experience possible.',
   },
   {
     icon: Users,
     title: 'Inclusive Access',
-    description: 'We make university applications accessible to students from all backgrounds.',
+    description: 'We make course discovery accessible to students from all backgrounds.',
   },
 ];
 
 const stats = [
-  { value: '10K+', label: 'Students Served' },
-  { value: '98%', label: 'Success Rate' },
-  { value: '48hrs', label: 'Average Processing' },
-  { value: '24/7', label: 'Support Available' },
+  { value: '500+', label: 'Courses Listed' },
+  { value: '42', label: 'Universities' },
+  { value: '272', label: 'Colleges' },
+  { value: '10K+', label: 'Students Helped' },
 ];
 
 const AboutPage = () => {
   return (
     <>
       <Helmet>
-        <title>About Us | KUCCPS Registration Service</title>
+        <title>About Us | CourseMatch - Find Your Perfect Course</title>
         <meta
           name="description"
-          content="Learn about our mission to simplify university applications for Kenyan students. We've helped thousands achieve their higher education dreams."
+          content="Learn about CourseMatch and our mission to help Kenyan students discover and explore university courses that match their qualifications."
         />
       </Helmet>
 
@@ -54,11 +54,11 @@ const AboutPage = () => {
           <section className="gradient-coral py-16">
             <div className="container mx-auto px-4 text-center">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-4">
-                About Us
+                About CourseMatch
               </h1>
               <p className="text-primary-foreground/90 text-lg max-w-2xl mx-auto">
-                Empowering Kenyan students to achieve their higher education dreams through
-                simplified university applications.
+                Empowering Kenyan students to discover the right courses for their future 
+                through smart matching and comprehensive course information.
               </p>
             </div>
           </section>
@@ -73,21 +73,21 @@ const AboutPage = () => {
                       Our Story
                     </span>
                     <h2 className="text-3xl font-bold text-foreground mb-4">
-                      Born from a Student's Frustration
+                      Making Course Discovery Simple
                     </h2>
                     <p className="text-muted-foreground mb-4">
-                      In 2020, our founder experienced firsthand the stress and confusion of the
-                      KUCCPS registration process. Long queues at cyber cafes, confusing
-                      interfaces, and the fear of making mistakes that could affect one's future.
+                      We started CourseMatch because we understood the challenges students face 
+                      when trying to find the right university course. With hundreds of programs 
+                      across dozens of institutions, it can be overwhelming.
                     </p>
                     <p className="text-muted-foreground mb-4">
-                      That experience sparked an idea: what if there was a service that handled
-                      all the technical aspects, allowing students to focus on what really
-                      matters—choosing the right course for their future?
+                      Our platform brings together comprehensive course information, eligibility 
+                      checking, and smart recommendations—all in one place. No more visiting 
+                      multiple websites or guessing if you qualify.
                     </p>
                     <p className="text-muted-foreground">
-                      Today, we've helped over 10,000 students successfully complete their
-                      KUCCPS registrations, and we're just getting started.
+                      Today, we've helped thousands of students explore courses and make 
+                      informed decisions about their higher education journey.
                     </p>
                   </div>
                   <div className="relative">
@@ -120,10 +120,10 @@ const AboutPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3">Our Mission</h3>
                   <p className="text-muted-foreground">
-                    To democratize access to higher education by removing the technical and
-                    bureaucratic barriers in the university application process. We believe
-                    every student deserves a fair chance at their dream course, regardless of
-                    their technical know-how.
+                    To simplify course discovery for every Kenyan student by providing 
+                    comprehensive, accurate, and personalized course information. We believe 
+                    every student deserves to find a program that matches their qualifications 
+                    and career aspirations.
                   </p>
                 </div>
 
@@ -133,9 +133,9 @@ const AboutPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3">Our Vision</h3>
                   <p className="text-muted-foreground">
-                    To become Kenya's most trusted education services platform, expanding beyond
-                    KUCCPS to support students throughout their entire educational journey—from
-                    high school to career success.
+                    To become Kenya's most trusted platform for course discovery, helping 
+                    students navigate their educational journey with confidence. We envision 
+                    a future where every student can easily find their perfect course match.
                   </p>
                 </div>
               </div>
@@ -179,17 +179,16 @@ const AboutPage = () => {
           <section className="py-16 gradient-coral">
             <div className="container mx-auto px-4 text-center">
               <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-                Join Our Growing Community
+                Start Exploring Courses Today
               </h2>
               <p className="text-primary-foreground/90 mb-8 max-w-xl mx-auto">
-                Be part of the thousands of students who trusted us with their university
-                applications.
+                Join thousands of students who have found their perfect course match with us.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/register">
+                <Link to="/courses">
                   <Button variant="hero" size="lg">
-                    Get Started Today
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <Search className="mr-2 h-5 w-5" />
+                    Browse Courses
                   </Button>
                 </Link>
                 <Link to="/contact">

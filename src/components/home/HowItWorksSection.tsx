@@ -1,28 +1,28 @@
-import { Search, CreditCard, FileText, CheckCircle2 } from 'lucide-react';
+import { Search, ClipboardCheck, BarChart3, BookmarkCheck } from 'lucide-react';
 
 const steps = [
   {
-    icon: Search,
-    title: 'Browse & Select',
-    description: 'Explore our comprehensive course catalog and find programs that match your qualifications and career goals.',
+    icon: ClipboardCheck,
+    title: 'Enter Your Grades',
+    description: 'Input your KCSE subject grades and we\'ll calculate your cluster points automatically.',
     color: 'primary',
   },
   {
-    icon: CreditCard,
-    title: 'Pay for Service',
-    description: 'Secure your application with our affordable KES 500 service fee via M-Pesa. Quick and convenient.',
+    icon: Search,
+    title: 'Browse Courses',
+    description: 'Explore our comprehensive catalog of 500+ courses from universities and colleges across Kenya.',
     color: 'secondary',
   },
   {
-    icon: FileText,
-    title: 'Submit Details',
-    description: 'Provide your KCSE results and personal information. Our system validates your eligibility instantly.',
+    icon: BarChart3,
+    title: 'Check Eligibility',
+    description: 'See which courses you qualify for based on your grades and subject requirements.',
     color: 'primary',
   },
   {
-    icon: CheckCircle2,
-    title: 'We Register You',
-    description: 'Sit back and relax. Our experts handle your KUCCPS registration and send you confirmation.',
+    icon: BookmarkCheck,
+    title: 'Shortlist & Compare',
+    description: 'Save your favorite courses to your shortlist and compare them side by side.',
     color: 'secondary',
   },
 ];
@@ -39,8 +39,8 @@ const HowItWorksSection = () => {
             How It Works
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Get your university application submitted in just four easy steps. 
-            No stress, no confusion—just results.
+            Finding your perfect course is easy with CourseMatch. 
+            Just follow these four simple steps.
           </p>
         </div>
 
