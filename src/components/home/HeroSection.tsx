@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, Search, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   const features = [
-    'Expert guidance through the process',
-    'Quick 48-hour turnaround',
-    'Money-back guarantee',
+    'Personalized course recommendations',
+    'Check eligibility instantly',
+    'Compare programs side by side',
   ];
 
   return (
@@ -21,32 +21,34 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/20 backdrop-blur-sm mb-6 animate-fade-in-up">
+            <Compass className="h-4 w-4 text-primary-foreground" />
             <span className="text-primary-foreground text-sm font-medium">
-              Only KES 500 per application
+              500+ Courses Available
             </span>
           </div>
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary-foreground mb-6 animate-fade-in-up animation-delay-100 leading-tight">
-            Simplify Your University Application
+            Find Your Perfect University Course
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 animate-fade-in-up animation-delay-200 max-w-2xl mx-auto">
-            We handle your KUCCPS registration so you don't have to. Focus on your future while we take care of the paperwork.
+            Discover courses that match your qualifications and career goals. Browse programs from top Kenyan universities and colleges.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in-up animation-delay-300">
-            <Link to="/register">
+            <Link to="/courses">
               <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <Search className="mr-2 h-5 w-5" />
+                Explore Courses
               </Button>
             </Link>
-            <Link to="/courses">
+            <Link to="/register">
               <Button variant="hero-outline" size="xl" className="w-full sm:w-auto">
-                Browse Courses
+                Create Account
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>

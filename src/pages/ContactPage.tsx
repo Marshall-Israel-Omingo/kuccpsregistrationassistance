@@ -26,8 +26,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: 'Email',
-    details: ['support@kuccps.app', 'info@kuccps.app'],
-    action: 'mailto:support@kuccps.app',
+    details: ['support@coursematch.co.ke', 'info@coursematch.co.ke'],
+    action: 'mailto:support@coursematch.co.ke',
   },
   {
     icon: MapPin,
@@ -45,10 +45,9 @@ const contactInfo = [
 
 const inquiryTypes = [
   'General Inquiry',
-  'Application Support',
-  'Payment Issues',
-  'Technical Problem',
-  'Refund Request',
+  'Course Information',
+  'Technical Support',
+  'Feedback & Suggestions',
   'Partnership',
   'Other',
 ];
@@ -93,10 +92,10 @@ const ContactPage = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us | KUCCPS Registration Service</title>
+        <title>Contact Us | CourseMatch - Find Your Perfect Course</title>
         <meta
           name="description"
-          content="Get in touch with our support team. We're here to help with your KUCCPS registration questions and concerns."
+          content="Get in touch with the CourseMatch team. We're here to help with your course discovery questions."
         />
       </Helmet>
 
@@ -111,7 +110,7 @@ const ContactPage = () => {
                 Contact Us
               </h1>
               <p className="text-primary-foreground/90 text-lg max-w-2xl mx-auto">
-                Have questions? We're here to help. Reach out to our friendly support team.
+                Have questions about CourseMatch? We're here to help. Reach out to our friendly team.
               </p>
             </div>
           </section>

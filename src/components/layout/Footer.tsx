@@ -14,10 +14,10 @@ const Footer = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary transition-transform group-hover:scale-110">
                 <GraduationCap className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold tracking-tight">KUCCPS</span>
+              <span className="text-xl font-bold tracking-tight">CourseMatch</span>
             </Link>
             <p className="text-nav-foreground/70 text-sm leading-relaxed">
-              Simplifying university applications for Kenyan students. We handle your KUCCPS registration so you don't have to.
+              Discover and explore university courses in Kenya. Find the perfect program that matches your qualifications and career goals.
             </p>
             <div className="flex gap-3">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, index) => (
@@ -97,8 +97,8 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <a href="mailto:support@kuccps.app" className="text-nav-foreground/70 hover:text-primary text-sm transition-colors">
-                  support@kuccps.app
+                <a href="mailto:support@coursematch.co.ke" className="text-nav-foreground/70 hover:text-primary text-sm transition-colors">
+                  support@coursematch.co.ke
                 </a>
               </li>
             </ul>
@@ -108,7 +108,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-nav-foreground/10 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-nav-foreground/60 text-sm">
-            © {currentYear} KUCCPS Registration Service. All rights reserved.
+            © {currentYear} CourseMatch. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link to="/privacy" className="text-nav-foreground/60 hover:text-primary text-sm transition-colors">

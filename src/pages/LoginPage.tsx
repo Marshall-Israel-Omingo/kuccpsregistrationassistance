@@ -66,8 +66,8 @@ const LoginPage = () => {
   return (
     <>
       <Helmet>
-        <title>Login | KUCCPS Registration Service</title>
-        <meta name="description" content="Login to your KUCCPS account to manage your university application." />
+        <title>Login | CourseMatch - Find Your Perfect Course</title>
+        <meta name="description" content="Login to your CourseMatch account to access your course shortlist and personalized recommendations." />
       </Helmet>
 
       <div className="min-h-screen flex">
@@ -83,14 +83,14 @@ const LoginPage = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/20 backdrop-blur-sm">
                 <GraduationCap className="h-7 w-7 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold text-primary-foreground">KUCCPS</span>
+              <span className="text-2xl font-bold text-primary-foreground">CourseMatch</span>
             </Link>
 
             <h2 className="text-4xl font-bold text-primary-foreground mb-4">
               Welcome Back!
             </h2>
             <p className="text-primary-foreground/90 text-lg mb-8 max-w-md">
-              Continue your journey to higher education. Access your applications and track your progress.
+              Continue exploring courses and managing your shortlist. Your perfect course match awaits.
             </p>
 
             <div className="flex items-center gap-4">
@@ -105,7 +105,7 @@ const LoginPage = () => {
                 ))}
               </div>
               <p className="text-primary-foreground/80 text-sm">
-                Join 10,000+ students who trust us
+                Join 10,000+ students exploring courses
               </p>
             </div>
           </div>
@@ -120,7 +120,7 @@ const LoginPage = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
                   <GraduationCap className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">KUCCPS</span>
+                <span className="text-xl font-bold text-foreground">CourseMatch</span>
               </Link>
             </div>
 

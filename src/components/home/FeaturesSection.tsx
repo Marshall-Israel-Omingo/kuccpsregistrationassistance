@@ -1,35 +1,35 @@
-import { Shield, Clock, HeadphonesIcon, Award, RefreshCw, Smartphone } from 'lucide-react';
+import { Shield, Search, BarChart3, Award, Sparkles, Smartphone } from 'lucide-react';
 
 const features = [
   {
-    icon: Shield,
-    title: 'Secure & Confidential',
-    description: 'Your personal data is encrypted and protected. We never share your information with third parties.',
+    icon: Search,
+    title: 'Smart Course Search',
+    description: 'Find courses that match your KCSE grades and career interests with our intelligent search engine.',
   },
   {
-    icon: Clock,
-    title: '48-Hour Turnaround',
-    description: 'We process your application within 48 hours of receiving your complete details and payment.',
+    icon: BarChart3,
+    title: 'Eligibility Checker',
+    description: 'Instantly see which courses you qualify for based on your cluster points and subject grades.',
   },
   {
-    icon: HeadphonesIcon,
-    title: '24/7 Support',
-    description: 'Our dedicated support team is available round the clock to answer your questions.',
+    icon: Sparkles,
+    title: 'Personalized Recommendations',
+    description: 'Get course suggestions tailored to your qualifications and career aspirations.',
   },
   {
     icon: Award,
-    title: 'Expert Guidance',
-    description: 'Our KUCCPS specialists ensure your application is submitted correctly the first time.',
+    title: 'Compare Programs',
+    description: 'Compare courses across different universities to find the best fit for your goals.',
   },
   {
-    icon: RefreshCw,
-    title: 'Money-Back Guarantee',
-    description: 'If we fail to process your application successfully, get a full refund. No questions asked.',
+    icon: Shield,
+    title: 'Verified Information',
+    description: 'Access accurate, up-to-date course requirements and university details you can trust.',
   },
   {
     icon: Smartphone,
     title: 'Mobile Friendly',
-    description: 'Track your application status anytime, anywhere from your smartphone or tablet.',
+    description: 'Browse courses and check eligibility anytime, anywhere from your smartphone or tablet.',
   },
 ];
 
@@ -39,14 +39,13 @@ const FeaturesSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <span className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
-            Why Choose Us
+            Why CourseMatch
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Benefits That Matter
+            Everything You Need to Choose Right
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            We've helped thousands of students secure their university placements. 
-            Here's why they trust us.
+            We've built the tools to help you make informed decisions about your higher education journey.
           </p>
         </div>
 

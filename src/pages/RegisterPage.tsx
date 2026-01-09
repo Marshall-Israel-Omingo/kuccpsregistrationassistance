@@ -199,7 +199,7 @@ const RegisterPage = () => {
 
     toast({
       title: 'Account Created!',
-      description: 'Welcome to KUCCPS Registration Service.',
+      description: 'Welcome to CourseMatch! Start exploring courses.',
     });
     navigate('/dashboard');
     setIsLoading(false);
@@ -219,10 +219,10 @@ const RegisterPage = () => {
   return (
     <>
       <Helmet>
-        <title>Create Account | KUCCPS Registration Service</title>
+        <title>Create Account | CourseMatch - Find Your Perfect Course</title>
         <meta
           name="description"
-          content="Create your KUCCPS account to start your university application journey."
+          content="Create your CourseMatch account to discover courses that match your qualifications."
         />
       </Helmet>
 
@@ -239,15 +239,14 @@ const RegisterPage = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/20 backdrop-blur-sm">
                 <GraduationCap className="h-7 w-7 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold text-primary-foreground">KUCCPS</span>
+              <span className="text-2xl font-bold text-primary-foreground">CourseMatch</span>
             </Link>
 
             <h2 className="text-4xl font-bold text-primary-foreground mb-4">
-              Start Your Journey
+              Find Your Perfect Course
             </h2>
             <p className="text-primary-foreground/90 text-lg mb-8 max-w-md">
-              Create an account to access our comprehensive course catalog and streamlined
-              application process.
+              Create an account to access personalized course recommendations and save your favorites.
             </p>
 
             <div className="space-y-4">
@@ -277,7 +276,7 @@ const RegisterPage = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
                   <GraduationCap className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">KUCCPS</span>
+                <span className="text-xl font-bold text-foreground">CourseMatch</span>
               </Link>
             </div>
 
