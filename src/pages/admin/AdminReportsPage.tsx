@@ -5,7 +5,6 @@ import {
   TrendingUp,
   Users,
   CreditCard,
-  FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,11 +23,11 @@ const AdminReportsPage = () => {
 
   const reports = [
     {
-      name: 'Applications Summary',
-      description: 'Overview of all applications by status',
-      icon: FileText,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      name: 'Student Demographics',
+      description: 'Student distribution by county and grades',
+      icon: Users,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-100',
     },
     {
       name: 'Revenue Report',
@@ -36,13 +35,6 @@ const AdminReportsPage = () => {
       icon: CreditCard,
       color: 'text-secondary',
       bgColor: 'bg-secondary/10',
-    },
-    {
-      name: 'Student Demographics',
-      description: 'Student distribution by county and grades',
-      icon: Users,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-100',
     },
     {
       name: 'Performance Metrics',
@@ -79,20 +71,12 @@ const AdminReportsPage = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-foreground">{stats?.totalStudents || 0}</p>
                 <p className="text-sm text-muted-foreground">Total Students</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-foreground">{stats?.totalApplications || 0}</p>
-                <p className="text-sm text-muted-foreground">Applications</p>
               </div>
             </CardContent>
           </Card>
@@ -107,15 +91,17 @@ const AdminReportsPage = () => {
           <Card>
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-foreground">{stats?.totalTickets || 0}</p>
-                <p className="text-sm text-muted-foreground">Support Tickets</p>
+                <p className="text-3xl font-bold text-foreground">
+                  KES {stats?.payments?.filter((p: any) => p.status === 'completed').reduce((sum: number, p: any) => sum + Number(p.amount), 0).toLocaleString() || 0}
+                </p>
+                <p className="text-sm text-muted-foreground">Total Revenue</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Report Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reports.map((report) => (
             <Card key={report.name} className="hover:shadow-md transition-shadow">
               <CardHeader>
@@ -158,7 +144,6 @@ const AdminReportsPage = () => {
                   <SelectValue placeholder="Select data type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="applications">Applications</SelectItem>
                   <SelectItem value="students">Students</SelectItem>
                   <SelectItem value="payments">Payments</SelectItem>
                   <SelectItem value="courses">Courses</SelectItem>
