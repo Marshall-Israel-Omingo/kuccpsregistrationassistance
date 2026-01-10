@@ -1,11 +1,9 @@
-import { useState } from 'react';
-import { Shield, Key, Clock, Lock, AlertTriangle, Eye, Download } from 'lucide-react';
+import { Shield, Key, Clock, Lock, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
   Select,
@@ -14,42 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useAuditLogs, useSystemSettings } from '@/hooks/useAdmin';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminSecurityPage = () => {
-  const { data: auditLogs, isLoading: logsLoading } = useAuditLogs({ limit: 50 });
-  const { data: settings } = useSystemSettings('security');
   const { toast } = useToast();
-
-  const passwordPolicy = settings?.find(s => s.key === 'password_policy')?.value as Record<string, any> || {};
-  const sessionSettings = settings?.find(s => s.key === 'session')?.value as Record<string, any> || {};
-  const loginSettings = settings?.find(s => s.key === 'login')?.value as Record<string, any> || {};
 
   const handleSave = () => {
     toast({
       title: 'Settings Saved',
       description: 'Security settings have been updated.',
     });
-  };
-
-  const getSeverityBadge = (severity: string) => {
-    const styles: Record<string, string> = {
-      info: 'bg-muted text-muted-foreground',
-      warning: 'bg-amber-100 text-amber-700',
-      error: 'bg-destructive/10 text-destructive',
-      critical: 'bg-red-600 text-white',
-    };
-    return <Badge className={styles[severity] || styles.info}>{severity}</Badge>;
   };
 
   return (
@@ -77,23 +50,19 @@ const AdminSecurityPage = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label>Minimum 8 characters</Label>
-                    <Switch defaultChecked={passwordPolicy.min_length >= 8} />
+                    <Switch defaultChecked />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Require uppercase letter</Label>
-                    <Switch defaultChecked={passwordPolicy.require_uppercase} />
+                    <Switch defaultChecked />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Require number</Label>
-                    <Switch defaultChecked={passwordPolicy.require_number} />
+                    <Switch defaultChecked />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Require special character</Label>
-                    <Switch defaultChecked={passwordPolicy.require_special} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Password expiry (days, 0 = never)</Label>
-                    <Input type="number" defaultValue={0} className="w-20" />
+                    <Switch />
                   </div>
                 </div>
               </div>
@@ -138,15 +107,15 @@ const AdminSecurityPage = () => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Session timeout (minutes)</Label>
-                  <Input type="number" defaultValue={sessionSettings.timeout_minutes || 60} />
+                  <Input type="number" defaultValue={60} />
                 </div>
                 <div className="space-y-2">
                   <Label>Remember me duration (days)</Label>
-                  <Input type="number" defaultValue={sessionSettings.remember_days || 30} />
+                  <Input type="number" defaultValue={30} />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label>Enforce single session per user</Label>
-                  <Switch defaultChecked={sessionSettings.single_session} />
+                  <Switch />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label>Logout on browser close</Label>
@@ -162,18 +131,14 @@ const AdminSecurityPage = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Max failed attempts</Label>
-                    <Input type="number" defaultValue={loginSettings.max_attempts || 5} />
+                    <Input type="number" defaultValue={5} />
                   </div>
                   <div className="space-y-2">
                     <Label>Lockout duration (minutes)</Label>
-                    <Input type="number" defaultValue={loginSettings.lockout_minutes || 15} />
+                    <Input type="number" defaultValue={15} />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>CAPTCHA after failed attempts</Label>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Email on suspicious login</Label>
                     <Switch defaultChecked />
                   </div>
                 </div>
@@ -205,30 +170,6 @@ const AdminSecurityPage = () => {
               <Separator />
 
               <div>
-                <h3 className="font-medium text-foreground mb-4">Data Retention</h3>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label>Completed applications (years)</Label>
-                    <Input type="number" defaultValue={5} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Cancelled applications (months)</Label>
-                    <Input type="number" defaultValue={12} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Activity logs (months)</Label>
-                    <Input type="number" defaultValue={24} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Auto-delete after retention period</Label>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
                 <h3 className="font-medium text-foreground mb-4">Data Export & Privacy</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -238,10 +179,6 @@ const AdminSecurityPage = () => {
                   <div className="flex items-center justify-between">
                     <Label>Allow students to delete account</Label>
                     <Switch defaultChecked />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Account deletion grace period (days)</Label>
-                    <Input type="number" defaultValue={30} />
                   </div>
                 </div>
               </div>
@@ -274,10 +211,6 @@ const AdminSecurityPage = () => {
                 <Label>Backup time</Label>
                 <Input type="time" defaultValue="02:00" />
               </div>
-              <div className="space-y-2">
-                <Label>Keep backups</Label>
-                <Input type="number" defaultValue={30} />
-              </div>
               <div className="p-3 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">Last backup: Today at 02:00 AM</p>
               </div>
@@ -287,58 +220,6 @@ const AdminSecurityPage = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Audit Logs */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-secondary" />
-              Security Audit Log
-            </CardTitle>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export Log
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            {logsLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="w-6 h-6 border-4 border-secondary border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : !auditLogs || auditLogs.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-muted-foreground">
-                <p>No audit logs available</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Event Type</TableHead>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>IP Address</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell className="text-sm">
-                          {new Date(log.created_at).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">{log.event_type}</TableCell>
-                        <TableCell>{getSeverityBadge(log.severity)}</TableCell>
-                        <TableCell className="max-w-xs truncate">{log.description}</TableCell>
-                        <TableCell className="font-mono text-sm">{log.ip_address || '-'}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Save Button */}
         <div className="flex justify-end">

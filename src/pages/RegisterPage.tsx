@@ -168,10 +168,6 @@ const RegisterPage = () => {
     const { error } = await signUp(formData.email, formData.password, {
       full_name: formData.fullName,
       phone: formData.phone,
-      index_number: formData.kcseIndexNumber,
-      kcpe_index_number: formData.kcpeIndexNumber,
-      mean_grade: meanGrade,
-      cluster_points: totalPoints.toString(),
     });
 
     if (error) {
@@ -192,9 +188,16 @@ const RegisterPage = () => {
         user_id: newUser.id,
         subject: s.subject,
         grade: s.grade,
+        points: gradePoints[s.grade as keyof typeof gradePoints] || 0,
       }));
 
       await supabase.from('subject_grades').insert(subjectGradesData);
+
+      // Update profile with mean grade and aggregate points
+      await supabase.from('profiles').update({
+        mean_grade: meanGrade,
+        aggregate_points: totalPoints,
+      }).eq('user_id', newUser.id);
     }
 
     toast({
@@ -253,7 +256,7 @@ const RegisterPage = () => {
               {[
                 'Browse 500+ university courses',
                 'Check eligibility instantly',
-                'Track application progress',
+                'Save your favorite courses',
                 'Get expert support',
               ].map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">
@@ -446,30 +449,38 @@ const RegisterPage = () => {
                     />
                     {errors.kcpeIndexNumber && <p className="text-destructive text-sm">{errors.kcpeIndexNumber}</p>}
                   </div>
+
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Your index numbers help us verify your eligibility for courses. Please ensure they are accurate.
+                    </AlertDescription>
+                  </Alert>
                 </>
               )}
 
-              {/* Step 3: KCSE Subject Grades */}
+              {/* Step 3: KCSE Grades */}
               {currentStep === 3 && (
                 <>
-                  <Alert className="bg-secondary/10 border-secondary">
-                    <AlertCircle className="h-4 w-4 text-secondary" />
-                    <AlertDescription className="text-secondary">
-                      Add minimum 8 subjects including English/Kiswahili and Mathematics
-                    </AlertDescription>
-                  </Alert>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Add Your Subjects ({subjects.length}/8+)</Label>
+                      {subjects.length >= 7 && (
+                        <div className="text-sm text-secondary font-medium">
+                          Mean Grade: {meanGrade} ({totalPoints} points)
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Subject Entry */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="sm:col-span-1">
-                      <Label>Subject</Label>
+                    {/* Subject Selection */}
+                    <div className="flex gap-2">
                       <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                        <SelectTrigger>
+                        <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60">
+                        <SelectContent>
                           {kcseSubjects
-                            .filter(s => !subjects.some(sub => sub.subject === s))
+                            .filter(s => !subjects.some(added => added.subject === s))
                             .map((subject) => (
                               <SelectItem key={subject} value={subject}>
                                 {subject}
@@ -477,12 +488,9 @@ const RegisterPage = () => {
                             ))}
                         </SelectContent>
                       </Select>
-                    </div>
 
-                    <div>
-                      <Label>Grade</Label>
                       <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-24">
                           <SelectValue placeholder="Grade" />
                         </SelectTrigger>
                         <SelectContent>
@@ -493,71 +501,58 @@ const RegisterPage = () => {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
 
-                    <div className="flex items-end">
-                      <Button type="button" onClick={addSubject} className="w-full" variant="coral">
-                        <Plus className="h-4 w-4 mr-1" /> Add
+                      <Button type="button" variant="outline" size="icon" onClick={addSubject}>
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
 
-                  {errors.subjects && <p className="text-destructive text-sm">{errors.subjects}</p>}
-
-                  {/* Added Subjects List */}
-                  {subjects.length > 0 && (
-                    <div className="space-y-2">
-                      <Label>Added Subjects ({subjects.length})</Label>
-                      <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-3">
-                        {subjects.map((item, index) => (
-                          <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">{item.subject}</span>
-                              <span className="text-secondary font-bold">{item.grade}</span>
-                              <span className="text-xs text-muted-foreground">({gradePoints[item.grade]} pts)</span>
+                    {/* Added Subjects */}
+                    {subjects.length > 0 && (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {subjects.map((s, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="font-medium text-foreground">{s.subject}</span>
+                              <span className="text-muted-foreground">•</span>
+                              <span className={cn(
+                                'font-semibold',
+                                s.grade.startsWith('A') ? 'text-secondary' :
+                                s.grade.startsWith('B') ? 'text-primary' :
+                                s.grade.startsWith('C') ? 'text-amber-600' : 'text-muted-foreground'
+                              )}>
+                                {s.grade} ({gradePoints[s.grade as keyof typeof gradePoints]} pts)
+                              </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => removeSubject(index)}
-                              className="text-destructive hover:text-destructive/80"
+                              className="text-muted-foreground hover:text-destructive"
                             >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Calculated Results */}
-                  {subjects.length >= 7 && (
-                    <div className="bg-gradient-to-r from-secondary/10 to-primary/10 border-2 border-secondary/30 rounded-lg p-4">
-                      <h3 className="font-bold text-foreground mb-3">Calculated Results</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-background p-3 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Mean Grade</p>
-                          <p className="text-2xl font-bold text-secondary">{meanGrade}</p>
-                        </div>
-                        <div className="bg-background p-3 rounded-lg text-center">
-                          <p className="text-xs text-muted-foreground mb-1">Total Points</p>
-                          <p className="text-2xl font-bold text-primary">{totalPoints}</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2 text-center">
-                        * Based on best Language + Mathematics + Best 5 other subjects
-                      </p>
-                    </div>
-                  )}
+                    {errors.subjects && (
+                      <p className="text-destructive text-sm">{errors.subjects}</p>
+                    )}
+                  </div>
 
-                  {/* Terms & Privacy */}
-                  <div className="space-y-3 pt-2">
+                  {/* Terms and Privacy */}
+                  <div className="space-y-4 pt-4">
                     <div className="flex items-start gap-2">
                       <Checkbox
-                        id="agreeTerms"
+                        id="terms"
                         checked={formData.agreeTerms}
                         onCheckedChange={(checked) => updateFormData('agreeTerms', checked as boolean)}
                       />
-                      <Label htmlFor="agreeTerms" className="text-sm cursor-pointer">
+                      <Label htmlFor="terms" className="text-sm leading-tight cursor-pointer">
                         I agree to the{' '}
                         <Link to="/terms" className="text-secondary hover:underline">
                           Terms of Service
@@ -568,11 +563,11 @@ const RegisterPage = () => {
 
                     <div className="flex items-start gap-2">
                       <Checkbox
-                        id="agreePrivacy"
+                        id="privacy"
                         checked={formData.agreePrivacy}
                         onCheckedChange={(checked) => updateFormData('agreePrivacy', checked as boolean)}
                       />
-                      <Label htmlFor="agreePrivacy" className="text-sm cursor-pointer">
+                      <Label htmlFor="privacy" className="text-sm leading-tight cursor-pointer">
                         I agree to the{' '}
                         <Link to="/privacy" className="text-secondary hover:underline">
                           Privacy Policy
@@ -585,25 +580,23 @@ const RegisterPage = () => {
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={currentStep === 1}
-                  className={currentStep === 1 ? 'invisible' : ''}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                </Button>
+              <div className="flex gap-4 pt-4">
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                )}
 
-                {currentStep < 3 ? (
-                  <Button type="button" onClick={handleNext} variant="coral">
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                {currentStep < steps.length ? (
+                  <Button type="button" variant="teal" onClick={handleNext} className="flex-1">
+                    Next
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" variant="teal" disabled={isLoading}>
+                  <Button type="submit" variant="teal" className="flex-1" disabled={isLoading}>
                     {isLoading ? 'Creating Account...' : 'Create Account'}
-                    <Check className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}
               </div>

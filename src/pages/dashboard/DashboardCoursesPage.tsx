@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, SlidersHorizontal, X, Plus, Check, Building2, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, X, Check, Building2, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,9 +13,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { useProfile } from '@/hooks/useProfile';
-import { useApplication, useCourseSelections, useAddCourseSelection } from '@/hooks/useApplication';
 import { courses, principles, Course } from '@/data/courses';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const DashboardCoursesPage = () => {
@@ -22,55 +21,11 @@ const DashboardCoursesPage = () => {
   const [selectedPrinciple, setSelectedPrinciple] = useState<string>('all');
   const [sortBy, setSortBy] = useState('name');
   const { data: profile } = useProfile();
-  const { data: application } = useApplication();
-  const { data: selections } = useCourseSelections(application?.id);
-  const addCourseSelection = useAddCourseSelection();
-  const { toast } = useToast();
 
-  const userClusterPoints = profile?.cluster_points || 0;
+  const userPoints = profile?.aggregate_points || 0;
 
   const isQualified = (course: Course) => {
-    return userClusterPoints >= course.clusterPoints;
-  };
-
-  const isSelected = (courseId: string) => {
-    return selections?.some((s) => s.course_id === courseId);
-  };
-
-  const getNextPriority = () => {
-    if (!selections || selections.length === 0) return 1;
-    return Math.max(...selections.map((s) => s.priority)) + 1;
-  };
-
-  const handleAddCourse = async (course: Course) => {
-    if (!application) {
-      toast({ title: 'Error', description: 'No application found', variant: 'destructive' });
-      return;
-    }
-
-    if (selections && selections.length >= 4) {
-      toast({ title: 'Maximum reached', description: 'You can only select up to 4 courses', variant: 'destructive' });
-      return;
-    }
-
-    try {
-      await addCourseSelection.mutateAsync({
-        application_id: application.id,
-        course_id: course.id,
-        course_name: course.name,
-        course_code: course.code,
-        institution_name: course.institutions[0]?.name || null,
-        cluster_points: course.clusterPoints,
-        priority: getNextPriority(),
-      });
-      toast({ title: 'Course added!', description: `${course.name} added as Choice ${getNextPriority()}` });
-    } catch (error: any) {
-      if (error.message?.includes('unique')) {
-        toast({ title: 'Already selected', description: 'This course is already in your choices', variant: 'destructive' });
-      } else {
-        toast({ title: 'Error', description: 'Failed to add course', variant: 'destructive' });
-      }
-    }
+    return userPoints >= course.clusterPoints;
   };
 
   const filteredCourses = courses
@@ -101,7 +56,7 @@ const DashboardCoursesPage = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Browse Courses</h1>
             <p className="text-muted-foreground">
-              {selections?.length || 0} of 4 courses selected • Your points: {userClusterPoints || 'Not set'}
+              Your points: {userPoints || 'Not set'} • Find courses that match your qualifications
             </p>
           </div>
         </div>
@@ -158,14 +113,12 @@ const DashboardCoursesPage = () => {
         <div className="grid gap-4">
           {filteredCourses.map((course) => {
             const qualified = isQualified(course);
-            const selected = isSelected(course.id);
 
             return (
               <Card
                 key={course.id}
                 className={cn(
                   'transition-all hover:shadow-md',
-                  selected && 'border-secondary bg-secondary/5',
                   !qualified && 'opacity-70'
                 )}
               >
@@ -187,7 +140,7 @@ const DashboardCoursesPage = () => {
                       </div>
                       <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <span className="font-semibold text-secondary">{course.clusterPoints}</span> points
+                          <span className="font-semibold text-secondary">{course.clusterPoints}</span> points required
                         </span>
                         <span className="flex items-center gap-1">
                           <Building2 className="h-4 w-4" />
@@ -201,21 +154,12 @@ const DashboardCoursesPage = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {selected ? (
-                        <Button variant="outline" disabled className="text-secondary">
-                          <Check className="mr-2 h-4 w-4" />
-                          Selected
+                      <Link to={`/courses/${course.id}`}>
+                        <Button variant="outline">
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
-                      ) : (
-                        <Button
-                          variant="teal"
-                          onClick={() => handleAddCourse(course)}
-                          disabled={!qualified || (selections && selections.length >= 4)}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add to Choices
-                        </Button>
-                      )}
+                      </Link>
                     </div>
                   </div>
                 </CardContent>

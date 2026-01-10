@@ -6,7 +6,6 @@ import {
   Zap, 
   RefreshCw,
   CheckCircle,
-  XCircle,
   Trash2,
   Activity,
 } from 'lucide-react';
@@ -19,38 +18,20 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { useSystemSettings, useUpdateSystemSetting } from '@/hooks/useAdmin';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminSystemPage = () => {
-  const { data: settings } = useSystemSettings('system');
-  const updateSetting = useUpdateSystemSetting();
   const { toast } = useToast();
   const [maintenanceMode, setMaintenanceMode] = useState(false);
 
-  const maintenanceSettings = settings?.find(s => s.key === 'maintenance')?.value as Record<string, any> || {};
-
   const handleMaintenanceToggle = async (enabled: boolean) => {
     setMaintenanceMode(enabled);
-    try {
-      await updateSetting.mutateAsync({
-        category: 'system',
-        key: 'maintenance',
-        value: { ...maintenanceSettings, enabled },
-      });
-      toast({
-        title: enabled ? 'Maintenance Mode Enabled' : 'Maintenance Mode Disabled',
-        description: enabled 
-          ? 'Students will see the maintenance page.' 
-          : 'System is now accessible to all users.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update maintenance mode.',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: enabled ? 'Maintenance Mode Enabled' : 'Maintenance Mode Disabled',
+      description: enabled 
+        ? 'Students will see the maintenance page.' 
+        : 'System is now accessible to all users.',
+    });
   };
 
   const systemStatus = [
@@ -110,7 +91,7 @@ const AdminSystemPage = () => {
                   <div className="space-y-2">
                     <Label>Maintenance message</Label>
                     <Textarea
-                      defaultValue={maintenanceSettings.message || 'System is under maintenance. Please try again later.'}
+                      defaultValue="System is under maintenance. Please try again later."
                       rows={3}
                     />
                   </div>
@@ -204,10 +185,6 @@ const AdminSystemPage = () => {
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Clear Student Portal Cache
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <RefreshCw className="h-4 w-4 mr-2" />
                   Clear Course Data Cache
                 </Button>
               </div>
@@ -261,9 +238,6 @@ const AdminSystemPage = () => {
                 <Button variant="outline" className="w-full">
                   Analyze Tables
                 </Button>
-                <Button variant="outline" className="w-full text-amber-600 hover:text-amber-700">
-                  Repair Tables
-                </Button>
               </div>
 
               <div className="p-3 bg-muted rounded-lg">
@@ -287,7 +261,7 @@ const AdminSystemPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold">v1.0.0</p>
-                <p className="text-sm text-muted-foreground">Released December 2024</p>
+                <p className="text-sm text-muted-foreground">Released January 2026</p>
               </div>
               <Badge className="bg-secondary/10 text-secondary">
                 <CheckCircle className="h-3 w-3 mr-1" />

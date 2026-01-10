@@ -9,73 +9,32 @@ import {
   AlertCircle,
   ArrowRight,
   Sparkles,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { useProfile } from '@/hooks/useProfile';
-import { useApplication, useCourseSelections } from '@/hooks/useApplication';
+import { useProfile, useSubjectGrades } from '@/hooks/useProfile';
 import { useLatestPayment } from '@/hooks/usePayments';
-
-const getStatusConfig = (status: string) => {
-  switch (status) {
-    case 'draft':
-      return { color: 'bg-muted', textColor: 'text-muted-foreground', label: 'Not Started', icon: Clock };
-    case 'payment_pending':
-      return { color: 'bg-warning', textColor: 'text-warning-foreground', label: 'Payment Pending', icon: AlertCircle };
-    case 'submitted':
-      return { color: 'bg-secondary', textColor: 'text-secondary-foreground', label: 'Submitted', icon: CheckCircle };
-    case 'in_progress':
-      return { color: 'bg-primary', textColor: 'text-primary-foreground', label: 'In Progress', icon: Clock };
-    case 'completed':
-      return { color: 'bg-success', textColor: 'text-success-foreground', label: 'Completed', icon: CheckCircle };
-    case 'rejected':
-      return { color: 'bg-destructive', textColor: 'text-destructive-foreground', label: 'Rejected', icon: AlertCircle };
-    default:
-      return { color: 'bg-muted', textColor: 'text-muted-foreground', label: 'Unknown', icon: Clock };
-  }
-};
-
-const getProgressPercentage = (
-  status: string,
-  selections: number,
-  personalConfirmed: boolean,
-  documentsUploaded: boolean
-) => {
-  let progress = 0;
-  if (selections > 0) progress += 25;
-  if (personalConfirmed) progress += 25;
-  if (documentsUploaded) progress += 25;
-  if (status === 'submitted' || status === 'in_progress') progress = 75;
-  if (status === 'completed') progress = 100;
-  return progress;
-};
 
 const DashboardHome = () => {
   const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: application, isLoading: applicationLoading } = useApplication();
-  const { data: selections } = useCourseSelections(application?.id);
+  const { data: subjectGrades } = useSubjectGrades();
   const { data: latestPayment } = useLatestPayment();
 
-  const isLoading = profileLoading || applicationLoading;
-  const statusConfig = getStatusConfig(application?.status || 'draft');
-  const StatusIcon = statusConfig.icon;
-  const progress = getProgressPercentage(
-    application?.status || 'draft',
-    selections?.length || 0,
-    application?.personal_details_confirmed || false,
-    application?.documents_uploaded || false
-  );
+  const isLoading = profileLoading;
 
   const profileCompletion = () => {
     if (!profile) return 0;
     let complete = 0;
-    const fields = ['full_name', 'email', 'phone', 'id_number', 'index_number', 'mean_grade', 'cluster_points'];
+    const fields = ['full_name', 'email', 'phone', 'mean_grade', 'aggregate_points'];
     fields.forEach((field) => {
       if (profile[field as keyof typeof profile]) complete++;
     });
-    return Math.round((complete / fields.length) * 100);
+    // Add subject grades completion
+    if (subjectGrades && subjectGrades.length >= 7) complete++;
+    return Math.round((complete / (fields.length + 1)) * 100);
   };
 
   if (isLoading) {
@@ -103,41 +62,9 @@ const DashboardHome = () => {
             Welcome back, {profile?.full_name?.split(' ')[0] || 'Student'}!
           </h1>
           <p className="text-primary-foreground/80 mt-1">
-            {application?.status === 'completed'
-              ? 'Your application has been completed successfully!'
-              : 'Continue your application and secure your future.'}
+            Discover courses that match your qualifications.
           </p>
         </div>
-
-        {/* Application Status Card */}
-        <Card className="border-l-4 border-l-secondary">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-xl ${statusConfig.color} flex items-center justify-center`}>
-                  <StatusIcon className={`h-8 w-8 ${statusConfig.textColor}`} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Application Status</p>
-                  <h3 className="text-xl font-bold text-foreground">{statusConfig.label}</h3>
-                </div>
-              </div>
-              <div className="flex-1 max-w-md">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-semibold text-secondary">{progress}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-              <Link to="/dashboard/application">
-                <Button variant="teal">
-                  View Application
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -148,15 +75,15 @@ const DashboardHome = () => {
                   <BookOpen className="h-6 w-6 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-secondary">{selections?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Courses Selected</p>
+                  <p className="text-3xl font-bold text-secondary">{profile?.mean_grade || '-'}</p>
+                  <p className="text-sm text-muted-foreground">Mean Grade</p>
                 </div>
               </div>
               <Link
-                to="/dashboard/application"
+                to="/dashboard/profile"
                 className="text-sm text-primary hover:underline mt-4 inline-block"
               >
-                View Choices →
+                View Profile →
               </Link>
             </CardContent>
           </Card>
@@ -216,6 +143,43 @@ const DashboardHome = () => {
           </Card>
         </div>
 
+        {/* Academic Summary */}
+        {subjectGrades && subjectGrades.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Your KCSE Results</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="p-3 bg-muted/50 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-secondary">{profile?.mean_grade || '-'}</p>
+                  <p className="text-sm text-muted-foreground">Mean Grade</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-primary">{profile?.aggregate_points || 0}</p>
+                  <p className="text-sm text-muted-foreground">Total Points</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg text-center">
+                  <p className="text-2xl font-bold">{subjectGrades.length}</p>
+                  <p className="text-sm text-muted-foreground">Subjects</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-green-600">
+                    {subjectGrades.filter(g => g.grade.startsWith('A') || g.grade.startsWith('B')).length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">A's & B's</p>
+                </div>
+              </div>
+              <Link to="/dashboard/profile">
+                <Button variant="outline" size="sm">
+                  View All Grades
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Quick Actions */}
         <Card>
           <CardHeader>
@@ -223,19 +187,19 @@ const DashboardHome = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link to="/dashboard/courses">
+              <Link to="/courses">
                 <Button variant="teal" className="w-full h-auto py-4 flex-col gap-2">
                   <BookOpen className="h-6 w-6" />
                   Browse Courses
                 </Button>
               </Link>
-              <Link to="/dashboard/application">
+              <Link to="/dashboard/profile">
                 <Button variant="coral" className="w-full h-auto py-4 flex-col gap-2">
                   <FileText className="h-6 w-6" />
-                  Complete Application
+                  Update Profile
                 </Button>
               </Link>
-              <Link to="/dashboard/support">
+              <Link to="/contact">
                 <Button variant="charcoal" className="w-full h-auto py-4 flex-col gap-2">
                   <AlertCircle className="h-6 w-6" />
                   Get Help
