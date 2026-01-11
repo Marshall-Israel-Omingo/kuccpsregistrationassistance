@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   GraduationCap,
+  ListChecks,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,8 +36,8 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/profile', label: 'My Profile', icon: User },
   { href: '/dashboard/courses', label: 'Browse Courses', icon: BookOpen },
+  { href: '/dashboard/my-choices', label: 'My Choices', icon: ListChecks },
   { href: '/dashboard/application', label: 'My Application', icon: FileText },
-  { href: '/dashboard/support', label: 'Support', icon: HelpCircle },
   { href: '/dashboard/payments', label: 'Payments', icon: Wallet },
 ];
 
