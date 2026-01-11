@@ -391,6 +391,10 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_activity: {
+        Args: { p_event_data?: Json; p_event_type: string }
+        Returns: undefined
+      }
     }
     Enums: {
       access_status: "free" | "pending" | "paid" | "expired"
