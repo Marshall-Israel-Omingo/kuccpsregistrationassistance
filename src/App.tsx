@@ -20,6 +20,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ProfilePage from "./pages/dashboard/ProfilePage";
 import ApplicationPage from "./pages/dashboard/ApplicationPage";
 import DashboardCoursesPage from "./pages/dashboard/DashboardCoursesPage";
+import MyChoicesPage from "./pages/dashboard/MyChoicesPage";
 import PaymentsPage from "./pages/dashboard/PaymentsPage";
 import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import NotFound from "./pages/NotFound";
@@ -90,6 +91,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <ApplicationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/my-choices"
+                element={
+                  <ProtectedRoute>
+                    <MyChoicesPage />
                   </ProtectedRoute>
                 }
               />

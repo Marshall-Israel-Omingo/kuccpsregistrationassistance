@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   ChevronLeft,
@@ -10,17 +10,55 @@ import {
   MapPin,
   CheckCircle,
   Plus,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCourseById, getPrincipleById } from '@/data/courses';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAddToShortlist, useShortlistCourses } from '@/hooks/useShortlist';
+import { useToast } from '@/hooks/use-toast';
 
 const CourseDetailPage = () => {
   const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
   const course = getCourseById(courseId || '');
   const principle = course ? getPrincipleById(course.principleId) : null;
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const addToShortlist = useAddToShortlist();
+  const { data: shortlistCourses } = useShortlistCourses();
+  
+  const isInShortlist = shortlistCourses?.some(c => c.course_id === courseId) ?? false;
+  const shortlistCount = shortlistCourses?.length || 0;
+
+  const handleAddToChoices = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: `/courses/${courseId}` } } });
+      return;
+    }
+
+    try {
+      await addToShortlist.mutateAsync({ 
+        courseId: courseId || '',
+        institutionId: course?.institutions[0]?.id,
+        institutionName: course?.institutions[0]?.name,
+      });
+      toast({
+        title: 'Added to My Choices',
+        description: `${course?.name} has been added to your course choices.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Could not add course',
+        description: error.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (!course || !principle) {
     return (
@@ -228,21 +266,41 @@ const CourseDetailPage = () => {
                         </div>
                       </div>
 
-                      <Link to="/register">
-                        <Button variant="teal" size="lg" className="w-full mb-3">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add to My Choices
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="teal" 
+                        size="lg" 
+                        className="w-full mb-3"
+                        onClick={handleAddToChoices}
+                        disabled={isInShortlist || shortlistCount >= 4 || addToShortlist.isPending}
+                      >
+                        {addToShortlist.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Adding...
+                          </>
+                        ) : isInShortlist ? (
+                          <>
+                            <Check className="mr-2 h-4 w-4" />
+                            Added to Choices
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add to My Choices
+                          </>
+                        )}
+                      </Button>
 
-                      <Link to="/login">
-                        <Button variant="outline" size="lg" className="w-full">
-                          Login to Apply
-                        </Button>
-                      </Link>
+                      {isInShortlist && (
+                        <Link to="/dashboard/my-choices">
+                          <Button variant="outline" size="lg" className="w-full">
+                            View My Choices
+                          </Button>
+                        </Link>
+                      )}
 
                       <p className="text-xs text-muted-foreground text-center mt-4">
-                        You can select up to 4 course choices
+                        {shortlistCount}/4 choices selected
                       </p>
                     </CardContent>
                   </Card>

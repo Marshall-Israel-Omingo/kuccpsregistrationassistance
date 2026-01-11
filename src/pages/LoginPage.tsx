@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Eye, EyeOff, GraduationCap, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,10 @@ const LoginPage = () => {
   const { signIn, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from location state or default
+  const from = (location.state as { from?: Location })?.from?.pathname || null;
 
   // Check admin status and redirect accordingly
   useEffect(() => {
@@ -31,15 +35,19 @@ const LoginPage = () => {
           .in('role', ['admin', 'moderator']);
         
         if (roles && roles.length > 0) {
-          navigate('/admin');
+          navigate('/admin', { replace: true });
+        } else if (from) {
+          // Go back to the page they were trying to access
+          navigate(from, { replace: true });
         } else {
-          navigate('/dashboard');
+          // Default to dashboard only if no previous location
+          navigate('/dashboard', { replace: true });
         }
       }
     };
     
     checkAdminAndRedirect();
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
